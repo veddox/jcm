@@ -85,6 +85,73 @@ function killtree!(tree::Tree,cons::Cons=forest)
 end
 
 """
+Test whether two trees intersect. A positive return value indicates conflict.
+0: no intersection; 1: the first tree is larger; 2: the second tree is larger
+"""
+function inconflict(tree1::Tree, tree2::Tree)::UInt8
+    mindist = (tree1.size + tree2.size)/2
+    dx = abs(tree1.position.x - tree2.position.x)
+    dy = abs(tree1.position.y - tree2.position.y)
+    if  dx >= mindist || dy >= mindist || hypot(dx,dy) >= mindist
+        return 0
+    else
+        tree1.size > tree2.size ? 1 : 2
+    end
+end
+
+"""
+Check whether the tree in this cons cell conflicts with trees in the
+vicinity and, if so, kill the smaller one.
+"""
+function compete!(cons::Cons)
+    tree = cons.car
+    # go right until we're sure we won't find any more conflicts
+    next = cons.cdr
+    while next != nothing && abs(next.car.position.x - tree.position.x) < (tree.size/2)+2^7
+        conflict = inconflict(tree, next.car)
+        if conflict == 2
+            killtree!(tree, cons)
+            return
+        elseif conflict == 1
+            killcell = next
+            next = next.cdr
+            killtree!(killcell.car, killcell)
+        elseif conflict == 0
+            next = next.cdr
+        end
+    end
+    # then go left and repeat
+    next = cons.prev
+    while next != nothing && abs(next.car.position.x - tree.position.x) < (tree.size/2)+2^7
+        conflict = inconflict(tree, next.car)
+        if conflict == 2
+            killtree!(tree, cons)
+            return
+        elseif conflict == 1
+            killcell = next
+            next = next.prev
+            killtree!(killcell.car, killcell)
+        elseif conflict == 0        
+            next = next.prev
+        end
+    end
+end
+
+"""
+Find the cons cell inhabited by this tree, then compete as above.
+(wrapper function)
+"""
+function compete!(tree::Tree, cons::Cons=forest)
+    if cons.car == tree
+        compete!(cons)
+    elseif cons.cdr == nothing
+        @warn "Attempting to compete nonexistent tree."
+    else
+        compete!(tree,cons.cdr)
+    end
+end
+
+"""
 Produce seeds and disperse them in the landscape, planting them where possible
 """
 function disperse!(tree::Tree)

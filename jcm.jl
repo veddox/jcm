@@ -15,6 +15,10 @@ global_logger(ConsoleLogger(stdout, Logging.Debug))
 
 include("trees.jl")
 include("forest.jl")
-include("pathogens.jl")
+
+function run(updates=1000)
+    @warn "Not yet implemented."
+    #TODO
+end
 
 end

@@ -63,13 +63,11 @@ diversity levels.
 
 ## Source files
 
-- `jcm.jl`
+- `jcm.jl` The main module file. Import this to run the model.
 
-- `trees.jl`
+- `trees.jl` Contains all classes and their default values.
 
-- `forest.jl`
-
-- `pathogens.jl`
+- `forest.jl` Contains all process functions.
 
 ---
 &copy; 2020 Daniel Vedder
