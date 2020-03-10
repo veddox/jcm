@@ -5,19 +5,19 @@
 
 struct Species
     id::UInt8
-    max_age::UInt
-    max_size::UInt
-    growth_rate::UInt
-    seed_production::UInt
+    max_age::UInt16
+    max_size::UInt8
+    growth_rate::UInt8
+    seed_production::UInt16
     pathogen_resistance::Float16
 end
 
 mutable struct Tree
     species::Species
-    age::UInt
-    size::UInt
+    age::UInt16
+    size::UInt8
     mature::Bool
-    position::NamedTuple{(:x, :y), Tuple{Int,Int}}
+    position::NamedTuple{(:x, :y), Tuple{Int16,Int16}}
 end
 
 #The default species

@@ -10,6 +10,9 @@
 
 module jcm
 
+using Logging
+global_logger(ConsoleLogger(stdout, Logging.Debug))
+
 include("trees.jl")
 include("forest.jl")
 include("pathogens.jl")
