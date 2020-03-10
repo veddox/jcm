@@ -3,7 +3,8 @@
 ### (c) Daniel Vedder, MIT license
 ###
 
-const worldsize = 1000
+const nspecies = 16     # The number of species that will be created
+const worldsize = 1000  # The width of the square world arena in meters
 
 """
 A cons cell to implement a double linked list for the forest

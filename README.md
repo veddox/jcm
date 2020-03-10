@@ -38,9 +38,17 @@ diversity levels.
   - seeds disperse stochastically as per the dispersal kernel
   - seeds that leave the landscape or fall inside another tree's sphere of
   influence (SOI) die
-  - seeds germinate and grow until they reach maturity (= max size)
+  - seeds germinate and grow until they reach maturity (= `max size`)
   - saplings that conflict with a larger tree's SOI die
-  - trees that reach max age die
+  - trees that reach `max age` die
+  
+- Epidemiology:
+  - each pathogen may infect a defined number of species (default: 1)
+  - an infected tree can infect conspecifics within the `infection radius`
+  - the infection probability depends on the distance between the trees, 
+  the pathogen's `infection rate`, and the healthy tree's `pathogen resistance`
+  - the pathogen's `lethality` determines the percentage chance of death per
+  round for infected trees
   
 - Main experiment:
   - all species are functionally equivalent (-> equal trait values)
@@ -50,6 +58,7 @@ diversity levels.
 - Extended experiment:
   - vary traits between species
   - allow traits to evolve
+  - test more generalistic pathogens
   - possibly also coevolution
 
 ## Source files
