@@ -64,4 +64,5 @@ diversity levels.
 
 ---
 &copy; 2020 Daniel Vedder
-Licensed under the terms of the MIT license.
+
+*Licensed under the terms of the MIT license.*
