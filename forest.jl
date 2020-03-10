@@ -3,84 +3,41 @@
 ### (c) Daniel Vedder, MIT license
 ###
 
-const worldsize::UInt = 1000
+const worldsize = 1000
 
 """
-One node of the quadtree used to represent the forest. A node has a parent
-(unless it is the root node), and four children, which may be other nodes
-or Tree instances.
-a = upper left, b = upper right, c = lower right, d = lower left
+A cons cell to implement a double linked list for the forest
+(Boy, do I miss Lisp :-/ )
 """
-mutable struct QuadNode
-    pos::NamedTuple{(:x, :y, :width), Tuple{Int,Int,Int}}
-    parent::Union{Nothing,QuadNode}
-    a::Union{Tree,Nothing,QuadNode}
-    b::Union{Tree,Nothing,QuadNode}
-    c::Union{Tree,Nothing,QuadNode}
-    d::Union{Tree,Nothing,QuadNode}
+mutable struct Cons
+    car::Union{Tree,Nothing}
+    cdr::Union{Cons,Nothing}
+    prev::Union{Cons,Nothing}
 end
 
-QuadNode() = QuadNode((0,0,worldsize), nothing, nothing, nothing, nothing, nothing)
-QuadNode(pos::NamedTuple{(:x, :y, :width), Tuple{Int,Int,Int}}, parent::QuadNode) =
-    QuadNode(pos, parent, nothing, nothing, nothing, nothing)
+# The first and last cons cells in the forest list, and the number of trees
+const forest = Cons(nothing,nothing,nothing)
+forestend = forest
+forestlen = 0
 
 """
-Set quadrant q (1=a, 2=b, etc.) of a node to a given value
+Insert a new tree object at the correct position in the forest list.
+(Sorted by ascending x values.)
 """
-function setquadrant!(node::QuadNode, q::UInt, v::Union{Tree,Nothing,QuadNote})
-    if q == 1
-        node.a = v
-    else if q == 2
-        node.b = v
-    else if q == 3
-        node.c = v
-    else if q == 4
-        node.d = v
-    end
-end
-
-"""
-The root node of a quadtree representing a forest. The simulation map is split
-up into recursive quadrants, with at zero or one trees per quadrant. If another
-tree is to be added to an occupied quadrant, the quadrant is split up.
-(This allows for fast search operations.)
-"""
-const root::QuadNode = QuadNode()
-
-"""
-Plant a tree (i.e. insert a Tree object into the quadtree representing the model forest).
-"""
-function planttree!(tree::Tree, node::QuadNode=root)
-    # figure out which quadrant the tree goes in
-    if tree.position.y >= node.pos.y
-        if tree.position.x <= node.pos.x
-            q = 1
-        else
-            q = 2
-        end
+function planttree!(tree::Tree,cons::Cons=forest)
+    if !isa(cons.car, Tree)
+        cons.car = tree
+        global forestlen = forestlen+1
+    elseif tree.position.x < cons.car.position.x
+        newcons = Cons(tree,cons,cons.prev)
+        cons.prev.cdr = newcons
+        cons.prev = newcons
+        global forestlen = forestlen+1
     else
-        if tree.position.x <= node.pos.x
-            q = 4
-        else
-            q = 3
+        if cons.cdr == nothing
+            cons.cdr = Cons(nothing,nothing,cons)
+            global forestend = cons.cdr
         end
+        planttree!(tree,cons.cdr)
     end
-    quadrant = eval(:(node.$(fieldnames(QuadNode)[q+2])))
-    if quadrant == nothing
-        #if the quadrant is empty, plant the tree
-        setquadrant!(node, q, tree)
-    else if isa(quadrant, Tree)
-        # if the quadrant already has a tree, create a new node and plant both
-        oldtree = quadrant
-        setquadrant!(node, q, QuadNode(node))
-        planttree!(oldtree, quadrant)
-        planttree!(tree, quadrant)
-    else if isa(quadrant, QuadNode)
-        # if the quadrant is another node, recurse down
-        planttree!(tree, quadrant)
-    end
-end
-
-function findconflict(tree::Tree)
-    #TODO
 end

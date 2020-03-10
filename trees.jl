@@ -20,6 +20,9 @@ mutable struct Tree
     position::NamedTuple{(:x, :y), Tuple{Int,Int}}
 end
 
+#The default species
+Species(id) = Species(id, 500, 25, 1, 50, 0)
 
-
+#Create a seed
+Tree(sp, xpos, ypos) = Tree(sp, 0, 0, false, (x=xpos, y=ypos))
     
