@@ -15,7 +15,7 @@ diversity levels.
 
 ## Model description
 
-- 16 tree species (0x1 - 0xf)
+- 16 tree species (0x1 - 0xf), 1km² world
 
 - Tree traits:
   - species ID

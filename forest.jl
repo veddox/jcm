@@ -3,9 +3,6 @@
 ### (c) Daniel Vedder, MIT license
 ###
 
-const nspecies = 16     # The number of species that will be created
-const worldsize = 1000  # The width of the square world arena in meters
-
 """
 A cons cell to implement a double linked list for the forest
 (Boy, do I miss Lisp :-/ )
@@ -29,7 +26,6 @@ function planttree!(tree::Tree,cons::Cons=forest)
     function success()
         global forestlen += 1
         @debug "Planted a tree" tree.position.x tree.position.y
-        compete!(cons) # Make sure it can grow here
     end
     if !isa(cons.car, Tree)
         # If we have an empty cons cell, plant the tree here
@@ -85,6 +81,29 @@ function killtree!(tree::Tree,cons::Cons=forest)
 end
 
 """
+Produce seeds and disperse them in the landscape, planting them where possible
+"""
+function disperse!(cons::Cons=forest)
+    if cons == nothing
+        return
+    else
+        tree = cons.car
+        # Each tree produces multiple seeds
+        for s in 1:tree.species.seed_production
+            #TODO implement a proper dispersal kernel
+            d = tree.species.dispersal_distance
+            sx = tree.position.x + rand(-d:d)
+            sy = tree.position.y + rand(-d:d)
+            if sx >= -worldsize && sx <= worldsize &&
+                sy >= -worldsize && sy <= worldsize
+                planttree!(tree)
+            end
+        end
+        disperse!(cons.cdr)
+    end
+end
+
+"""
 Test whether two trees intersect. A positive return value indicates conflict.
 0: no intersection; 1: the first tree is larger; 2: the second tree is larger
 """
@@ -103,7 +122,7 @@ end
 Check whether the tree in this cons cell conflicts with trees in the
 vicinity and, if so, kill the smaller one.
 """
-function compete!(cons::Cons)
+function compete_individual!(cons::Cons)
     tree = cons.car
     # go right until we're sure we won't find any more conflicts
     next = cons.cdr
@@ -138,49 +157,34 @@ function compete!(cons::Cons)
 end
 
 """
-Find the cons cell inhabited by this tree, then compete as above.
-(wrapper function)
+Go through the landscape and check each tree for space conflicts
 """
-function compete!(tree::Tree, cons::Cons=forest)
-    if cons.car == tree
-        compete!(cons)
-    elseif cons.cdr == nothing
-        @warn "Attempting to compete nonexistent tree."
+function compete!(cons::Cons=forest)
+    if cons == nothing
+        return
     else
-        compete!(tree,cons.cdr)
+        compete_individual!(cons)
+        compete!(cons.cdr)
     end
 end
 
 """
-Produce seeds and disperse them in the landscape, planting them where possible
-"""
-function disperse!(tree::Tree)
-    # Each tree produces multiple seeds
-    for s in 1:tree.species.seed_production
-        #TODO implement a proper dispersal kernel
-        d = tree.species.dispersal_distance
-        sx = tree.position.x + rand(-d:d)
-        sy = tree.position.y + rand(-d:d)
-        if sx >= -worldsize && sx <= worldsize &&
-            sy >= -worldsize && sy <= worldsize
-            planttree!(tree)
-        end
-    end
-end
-
-"""
-All saplings grow until they reach maturity
+All saplings grow until they reach maturity, then eventually die of old age.
 """
 function grow!(cons::Cons=forest)
     if cons == nothing
         return
     else
         tree = cons.car
-        if !tree.mature && tree.size < tree.species.max_size
+        next = cons.cdr
+        if tree.age >= tree.species.max_age
+            killtree!(tree, cons)
+        elseif !tree.mature && tree.size < tree.species.max_size
             tree.size += tree.species.growth_rate
         elseif !tree.mature && tree.size >= tree.species.max_size
             tree.mature = true
         end
-        grow!(cons.cdr)
+        tree.age += 1
+        grow!(next)
     end
 end
