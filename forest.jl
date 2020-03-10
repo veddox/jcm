@@ -25,20 +25,29 @@ Insert a new tree object at the correct position in the forest list.
 (Sorted by ascending x values.)
 """
 function planttree!(tree::Tree,cons::Cons=forest)
-    if !isa(cons.car, Tree)
-        cons.car = tree
-        global forestlen = forestlen+1
+    # What to do once a tree has been planted
+    function success()
+        global forestlen += 1
         @debug "Planted a tree" tree.position.x tree.position.y
+        compete!(cons) # Make sure it can grow here
+    end
+    if !isa(cons.car, Tree)
+        # If we have an empty cons cell, plant the tree here
+        cons.car = tree
+        success()
     elseif tree.position.x < cons.car.position.x
+        # If the next tree in the list is further east, insert a new cons cell
         newcons = Cons(tree,cons,cons.prev)
         cons.prev.cdr = newcons
         cons.prev = newcons
-        global forestlen = forestlen+1
-        @debug "Planted a tree" tree.position.x tree.position.y
+        cons = newcons
+        success()
     else
+        # If we're at the end of the list, append a new cons cell
         if cons.cdr == nothing
             cons.cdr = Cons(nothing,nothing,cons)
         end
+        # Recurse down the list until we can plant the tree
         planttree!(tree,cons.cdr)
     end
 end
@@ -65,12 +74,46 @@ function killtree!(tree::Tree,cons::Cons=forest)
             end
         end
         #cleanup and decrease the tree count
-        global forestlen = forestlen-1
+        global forestlen -= 1
         @debug "Killed a tree" tree.position.x tree.position.y
         tree = nothing
     elseif cons.cdr == nothing
         @warn "Attempting to remove nonexistent tree."
     else
         killtree!(tree,cons.cdr)
+    end
+end
+
+"""
+Produce seeds and disperse them in the landscape, planting them where possible
+"""
+function disperse!(tree::Tree)
+    # Each tree produces multiple seeds
+    for s in 1:tree.species.seed_production
+        #TODO implement a proper dispersal kernel
+        d = tree.species.dispersal_distance
+        sx = tree.position.x + rand(-d:d)
+        sy = tree.position.y + rand(-d:d)
+        if sx >= -worldsize && sx <= worldsize &&
+            sy >= -worldsize && sy <= worldsize
+            planttree!(tree)
+        end
+    end
+end
+
+"""
+All saplings grow until they reach maturity
+"""
+function grow!(cons::Cons=forest)
+    if cons == nothing
+        return
+    else
+        tree = cons.car
+        if !tree.mature && tree.size < tree.species.max_size
+            tree.size += tree.species.growth_rate
+        elseif !tree.mature && tree.size >= tree.species.max_size
+            tree.mature = true
+        end
+        grow!(cons.cdr)
     end
 end
