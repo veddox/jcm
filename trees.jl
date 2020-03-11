@@ -44,7 +44,7 @@ let species::Vector{Species} = Vector{Species}(undef,nspecies)
     Initialise all species. If `default` is true, use the standard trait values,
     otherwise create variable species.
     """
-    function createspecies(default=true)
+    global function createspecies(default=true)
         !default && @error "Variable species are not yet implemented."
         for n in nspecies
             species[n] = Species(n)
@@ -54,7 +54,7 @@ let species::Vector{Species} = Vector{Species}(undef,nspecies)
     """
     Return the species object with this ID.
     """
-    function getspecies(id)
+    global function getspecies(id)
         return species[id]
     end
 
