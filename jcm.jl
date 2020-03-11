@@ -16,14 +16,14 @@ const jcm_version = v"1.0-rc1"
 using Dates
 using ArgParse
 using Logging
-global_logger(ConsoleLogger(stdout, Logging.Debug))
 
 const settings = Dict("nspecies" => 16,             # The number of species that will be created
                       "worldsize" => 1001,          # The width of the square world arena in meters
                       "runtime" => 1000,            # The number of updates the simulation will run
                       "datafile" => "jcm_data.csv", # The name of the recorded data file
                       "datafreq" => 10,             # How long between data recordings?
-                      "pathogens" => false)         # Include pathogens in the simulation?
+                      "pathogens" => false,         # Include pathogens in the simulation?
+                      "verbosity" => "Debug")       # The log level (Debug, Info, Warn, Error)
 
 include("trees.jl")
 include("forest.jl")
@@ -34,7 +34,7 @@ Set parameters from the commandline.
 function parsecommandline()
     s = ArgParseSettings(prog="jcm.jl", version="$jcm_version", add_help=true, add_version=true,
                          description="Investigate the Janzen-Connell effect in a forest model.",
-                         epilog="Daniel Vedder, Ecosystem Modelling Group, University of Würzburg")
+                         epilog="JCM $jcm_version, (c) 2020 Daniel Vedder \n\nEcosystem Modelling Group, University of Würzburg")
     @add_arg_table! s begin
         "--nspecies", "-n"
         help = "the number of tree species to simulate"
@@ -59,6 +59,10 @@ function parsecommandline()
         "--pathogens", "-p"
         help = "run a simulation with pathogens"
         action = :store_true
+        "--verbosity", "-v"
+        help = "set the log level (Debug, Info, Warn, Error)"
+        arg_type = String
+        default = settings["verbosity"]
     end
     return parse_args(s)
 end
@@ -81,11 +85,21 @@ function initworld()
 end
 
 let updatelog::String = "", update=1
+
+    """
+    Set the internal update counter to the current update number.
+    (Needed by run())
+    """
+    global function setupdate(t)
+        update = t
+    end
+    
     """
     Save the data records of one individual in this turn.
     Called during `grow!()`
     """
     global function recordindividual(tree::Tree)
+        update < 0 && return # block unless we've reached a recording point
         datastring = update*","*tree.species.id*","*tree.age*","*tree.size
         datastring *= ","*tree.mature*","*tree.position.x*","*tree.position.y
         updatelog *= datastring * "\n"
@@ -94,12 +108,12 @@ let updatelog::String = "", update=1
     """
     Write out a csv file with all necessary analysis data.
     """
-    global function recorddata(next_update::UInt16)
+    global function recorddata()
         open(settings["datafile"], "a") do df
             print(df,updatelog)
         end
         updatelog = ""
-        update = next_update
+        update = -1 # block until the next recorded update
     end
 
     """
@@ -119,15 +133,24 @@ The main simulation function.
 """
 function run(updates::Int=settings["runtime"])
     merge!(settings, parsecommandline())
+    global_logger(ConsoleLogger(stdout, eval(
+        Meta.parse("Logging.$(settings["verbosity"])"))))
+    @debug "Debugging is on."
+    @info "Info is on."
+    @warn "This is a warning."
+    @error "And here we stop."
+    exit()
     initdatafile()
     initworld()
     for u in 1:updates
         @info "UPDATE $u"
+        record = (u-1)%settings["datafreq"] == 0
+        record && setupdate(u)
         disperse!()
         compete!()
         grow!()
         #TODO pathogen spread
-        (u-1)%settings["datafreq"] == 0 && recorddata(u+settings["datafreq"])
+        record && recorddata()
     end
 end
 

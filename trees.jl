@@ -46,7 +46,7 @@ let species::Vector{Species} = Vector{Species}(undef,settings["nspecies"])
     """
     global function createspecies(default=true)
         !default && @error "Variable species are not yet implemented."
-        for n in nspecies
+        for n in settings["nspecies"]
             species[n] = Species(n)
         end
     end
