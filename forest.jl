@@ -91,11 +91,13 @@ function disperse!(cons::Cons=forest)
         # Each tree produces multiple seeds
         for s in 1:tree.species.seed_production
             #TODO implement a proper dispersal kernel
-            d = tree.species.dispersal_distance
-            sx = tree.position.x + rand(-d:d)
-            sy = tree.position.y + rand(-d:d)
-            if sx >= -worldsize && sx <= worldsize &&
-                sy >= -worldsize && sy <= worldsize
+            # Find a random location in a circle around the tree
+            dx = tree.species.dispersal_distance
+            sx = tree.position.x + rand(-dx:dx)
+            dy = sqrt(abs(dx^2-(sx-tree.position.x)^2))
+            sy = tree.position.y + rand(-dy:dy)
+            if sx >= -settings["worldsize"] && sx <= settings["worldsize"] &&
+                sy >= -settings["worldsize"] && sy <= settings["worldsize"]
                 planttree!(tree)
             end
         end

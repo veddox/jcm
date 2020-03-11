@@ -4,22 +4,22 @@
 ###
 
 struct Species
-    id::UInt8
-    max_age::UInt16
-    max_size::UInt8
-    growth_rate::UInt8
-    seed_production::UInt16
-    dispersal_distance::UInt16
+    id::UInt8 # < 256
+    max_age::Int16 # < 32768
+    max_size::Int8 # < 128m
+    growth_rate::Int8
+    seed_production::Int16
+    dispersal_distance::Int16
     pathogen_resistance::Float16
 end
 
 #The default species
-Species(id) = Species(id, 200, 25, 2, 50, 200, 0)
+Species(id) = Species(id, 200, 25, 2, 20, 200, 0)
 
 mutable struct Tree
     species::Species
-    age::UInt16
-    size::UInt8
+    age::Int16
+    size::Int8
     mature::Bool
     position::NamedTuple{(:x, :y), Tuple{Int16,Int16}}
 end
@@ -36,7 +36,6 @@ end
 
 #The default pathogen
 Pathogen(host) = Pathogen(0.5, 100, 0.1, host)
-
 
 let species::Vector{Species} = Vector{Species}(undef,settings["nspecies"])
 

@@ -13,9 +13,10 @@ module jcm
 
 const jcm_version = v"1.0-rc1"
 
-using Dates
-using ArgParse
-using Logging
+using Dates,
+    ArgParse,
+    Logging,
+    Random
 
 const settings = Dict("nspecies" => 16,             # The number of species that will be created
                       "worldsize" => 1001,          # The width of the square world arena in meters
@@ -23,7 +24,8 @@ const settings = Dict("nspecies" => 16,             # The number of species that
                       "datafile" => "jcm_data.csv", # The name of the recorded data file
                       "datafreq" => 10,             # How long between data recordings?
                       "pathogens" => false,         # Include pathogens in the simulation?
-                      "verbosity" => "Debug")       # The log level (Debug, Info, Warn, Error)
+                      "verbosity" => "Debug",       # The log level (Debug, Info, Warn, Error)
+                      "seed" => 0)                  # The seed for the RNG (0 -> random)
 
 include("trees.jl")
 include("forest.jl")
@@ -63,15 +65,29 @@ function parsecommandline()
         help = "set the log level (Debug, Info, Warn, Error)"
         arg_type = String
         default = settings["verbosity"]
+        "--seed", "-s"
+        help = "set the seed for the RNG (0 -> random seed)"
+        arg_type = Int
+        default = settings["seed"]
     end
     return parse_args(s)
 end
-        
+
+"""
+Initialise the random number generator.
+"""
+function initRNG()
+    if settings["seed"] == 0
+        settings["seed"] = abs(rand(Random.RandomDevice(), Int32))
+    end
+    Random.seed!(settings["seed"])
+end
 
 """
 Initialise the world with one mature tree from each species at a random location.
 """
 function initworld()
+    @info "Initialising the world..."
     createspecies()
     for n in settings["nspecies"]
         halfworld = convert(Int,(settings["worldsize"]-1)/2)
@@ -117,12 +133,15 @@ let updatelog::String = "", update=1
     end
 
     """
-    Initialise the data file
+    Initialise the data file and the logger.
     """
-    global function initdatafile()
+    global function initrecording()
+        global_logger(ConsoleLogger(stdout, eval(
+            Meta.parse("Logging.$(settings["verbosity"])"))))
         open(settings["datafile"], "w") do df
             time = Dates.format(Dates.now(), "dd/mm/yyy HH:MM")
             println(df, "# Janzen-Connell Model data file, created $time")
+            println(df, "# Settings: $settings")
             println(df, "Update,Species,Age,Size,Mature,X,Y")
         end
     end
@@ -133,14 +152,8 @@ The main simulation function.
 """
 function run(updates::Int=settings["runtime"])
     merge!(settings, parsecommandline())
-    global_logger(ConsoleLogger(stdout, eval(
-        Meta.parse("Logging.$(settings["verbosity"])"))))
-    @debug "Debugging is on."
-    @info "Info is on."
-    @warn "This is a warning."
-    @error "And here we stop."
-    exit()
-    initdatafile()
+    initRNG()
+    initrecording()
     initworld()
     for u in 1:updates
         @info "UPDATE $u"
