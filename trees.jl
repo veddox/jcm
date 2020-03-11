@@ -14,7 +14,7 @@ struct Species
 end
 
 #The default species
-Species(id) = Species(id, 500, 25, 2, 50, 200, 0)
+Species(id) = Species(id, 200, 25, 2, 50, 200, 0)
 
 mutable struct Tree
     species::Species
@@ -36,3 +36,27 @@ end
 
 #The default pathogen
 Pathogen(host) = Pathogen(0.5, 100, 0.1, host)
+
+
+let species::Vector{Species} = Vector{Species}(undef,nspecies)
+
+    """
+    Initialise all species. If `default` is true, use the standard trait values,
+    otherwise create variable species.
+    """
+    function createspecies(default=true)
+        !default && @error "Variable species are not yet implemented."
+        for n in nspecies
+            species[n] = Species(n)
+        end
+    end
+
+    """
+    Return the species object with this ID.
+    """
+    function getspecies(id)
+        return species[id]
+    end
+
+    #XXX Do I need a reset() function?    
+end

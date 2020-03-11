@@ -15,7 +15,7 @@ end
 
 # The first cons cells in the forest list, and the number of trees
 const forest = Cons(nothing,nothing,nothing)
-forestlen = 0
+forestlen = 0 #XXX do I actually need this?
 
 """
 Insert a new tree object at the correct position in the forest list.
@@ -185,6 +185,7 @@ function grow!(cons::Cons=forest)
             tree.mature = true
         end
         tree.age += 1
+        recordindividual(tree)
         grow!(next)
     end
 end
