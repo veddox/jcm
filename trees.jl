@@ -38,7 +38,7 @@ end
 Pathogen(host) = Pathogen(0.5, 100, 0.1, host)
 
 
-let species::Vector{Species} = Vector{Species}(undef,nspecies)
+let species::Vector{Species} = Vector{Species}(undef,settings["nspecies"])
 
     """
     Initialise all species. If `default` is true, use the standard trait values,

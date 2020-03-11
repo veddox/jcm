@@ -18,12 +18,12 @@ using ArgParse
 using Logging
 global_logger(ConsoleLogger(stdout, Logging.Debug))
 
-#TODO move to a settings dict
-const nspecies = 16     # The number of species that will be created
-const worldsize = 1000  # The width of the square world arena in meters
-const runtime = 10  # The number of updates the simulation will run
-const datafile = "jcm_data.csv" # The name of the recorded data file
-const datafreq = 1       # How long between data recordings?
+const settings = Dict("nspecies" => 16,             # The number of species that will be created
+                      "worldsize" => 1001,          # The width of the square world arena in meters
+                      "runtime" => 1000,            # The number of updates the simulation will run
+                      "datafile" => "jcm_data.csv", # The name of the recorded data file
+                      "datafreq" => 10,             # How long between data recordings?
+                      "pathogens" => false)         # Include pathogens in the simulation?
 
 include("trees.jl")
 include("forest.jl")
@@ -39,23 +39,23 @@ function parsecommandline()
         "--nspecies", "-n"
         help = "the number of tree species to simulate"
         arg_type = Int
-        default = 16
+        default = settings["nspecies"]
         "--worldsize", "-w"
         help = "the width of the square simulation world in meters"
         arg_type = Int
-        default = 1000
+        default = settings["worldsize"]
         "--runtime", "-t"
         help = "the number of updates the simulation will run"
         arg_type = Int
-        default = 1000
+        default = settings["runtime"]
         "--datafile", "-f"
         help = "the file to which simulation data is written"
         arg_type = String
-        default = "jcm_data.csv"
+        default = settings["datafile"]
         "--datafreq", "-d"
         help = "the frequency in updates with which data is recorded"
         arg_type = Int
-        default = 50
+        default = settings["datafreq"]
         "--pathogens", "-p"
         help = "run a simulation with pathogens"
         action = :store_true
@@ -69,9 +69,10 @@ Initialise the world with one mature tree from each species at a random location
 """
 function initworld()
     createspecies()
-    for n in nspecies
-        xpos = convert(Int,rand(0:worldsize-1)-round(worldsize/2))
-        ypos = convert(Int,rand(0:worldsize-1)-round(worldsize/2))
+    for n in settings["nspecies"]
+        halfworld = convert(Int,(settings["worldsize"]-1)/2)
+        xpos = rand(-halfworld:halfworld)
+        ypos = rand(-halfworld:halfworld)
         sp = getspecies(n)
         tree = Tree(sp, convert(UInt16, round(sp.max_age/2)),
                     sp.max_size, true, (x=xpos, y=ypos))
@@ -94,7 +95,7 @@ let updatelog::String = "", update=1
     Write out a csv file with all necessary analysis data.
     """
     global function recorddata(next_update::UInt16)
-        open(datafile, "a") do df
+        open(settings["datafile"], "a") do df
             print(df,updatelog)
         end
         updatelog = ""
@@ -105,7 +106,7 @@ let updatelog::String = "", update=1
     Initialise the data file
     """
     global function initdatafile()
-        open(datafile, "w") do df
+        open(settings["datafile"], "w") do df
             time = Dates.format(Dates.now(), "dd/mm/yyy HH:MM")
             println(df, "# Janzen-Connell Model data file, created $time")
             println(df, "Update,Species,Age,Size,Mature,X,Y")
@@ -116,9 +117,8 @@ end
 """
 The main simulation function.
 """
-function run(updates::Int=runtime)
-    @warn "Incomplete implementation."
-    parsecommandline()
+function run(updates::Int=settings["runtime"])
+    merge!(settings, parsecommandline())
     initdatafile()
     initworld()
     for u in 1:updates
@@ -127,7 +127,7 @@ function run(updates::Int=runtime)
         compete!()
         grow!()
         #TODO pathogen spread
-        (u-1)%datafreq == 0 && recorddata(u+records)
+        (u-1)%settings["datafreq"] == 0 && recorddata(u+settings["datafreq"])
     end
 end
 
