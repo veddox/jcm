@@ -27,7 +27,7 @@ end
 #Create a seed
 Tree(sp, xpos, ypos) = Tree(sp, 0, 1, false, (x=xpos, y=ypos))
 
-mutable struct Pathogen
+mutable struct Pathogeny
     infection_rate::Float16
     infection_radius::UInt16
     lethality::Float16
@@ -45,7 +45,7 @@ let species::Vector{Species} = Vector{Species}(undef,settings["nspecies"])
     """
     global function createspecies(default=true)
         !default && @error "Variable species are not yet implemented."
-        for n in settings["nspecies"]
+        for n in 1:settings["nspecies"]
             species[n] = Species(n)
         end
     end

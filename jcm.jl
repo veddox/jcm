@@ -19,12 +19,12 @@ using Dates,
     Random
 
 const settings = Dict("nspecies" => 16,             # The number of species that will be created
-                      "worldsize" => 1001,          # The width of the square world arena in meters
+                      "worldsize" => 500,           # The extent from the center of the square world arena in meters
                       "runtime" => 1000,            # The number of updates the simulation will run
                       "datafile" => "jcm_data.csv", # The name of the recorded data file
                       "datafreq" => 10,             # How long between data recordings?
                       "pathogens" => false,         # Include pathogens in the simulation?
-                      "verbosity" => "Debug",       # The log level (Debug, Info, Warn, Error)
+                      "verbosity" => "Info",        # The log level (Debug, Info, Warn, Error)
                       "seed" => 0)                  # The seed for the RNG (0 -> random)
 
 include("trees.jl")
@@ -43,7 +43,7 @@ function parsecommandline()
         arg_type = Int
         default = settings["nspecies"]
         "--worldsize", "-w"
-        help = "the width of the square simulation world in meters"
+        help = "the extent from the center of the square world arena in meters"
         arg_type = Int
         default = settings["worldsize"]
         "--runtime", "-t"
@@ -87,21 +87,20 @@ end
 Initialise the world with one mature tree from each species at a random location.
 """
 function initworld()
-    @info "Initialising the world..."
     createspecies()
-    for n in settings["nspecies"]
-        halfworld = convert(Int,(settings["worldsize"]-1)/2)
-        xpos = rand(-halfworld:halfworld)
-        ypos = rand(-halfworld:halfworld)
+    for n in 1:settings["nspecies"]
+        ws = settings["worldsize"]
+        xpos = rand(-ws:ws)
+        ypos = rand(-ws:ws)
         sp = getspecies(n)
-        tree = Tree(sp, convert(UInt16, round(sp.max_age/2)),
+        tree = Tree(sp, convert(Int16, round(sp.max_age/2)),
                     sp.max_size, true, (x=xpos, y=ypos))
+        recordindividual(tree)
         planttree!(tree)
     end
 end
 
-let updatelog::String = "", update=1
-
+let updatelog::String = "", update=0
     """
     Set the internal update counter to the current update number.
     (Needed by run())
@@ -116,8 +115,8 @@ let updatelog::String = "", update=1
     """
     global function recordindividual(tree::Tree)
         update < 0 && return # block unless we've reached a recording point
-        datastring = update*","*tree.species.id*","*tree.age*","*tree.size
-        datastring *= ","*tree.mature*","*tree.position.x*","*tree.position.y
+        datastring = "$update,$(tree.species.id),$(tree.age),$(tree.size)"
+        datastring *= ",$(tree.mature),$(tree.position.x),$(tree.position.y)"
         updatelog *= datastring * "\n"
     end
     
@@ -141,7 +140,7 @@ let updatelog::String = "", update=1
         open(settings["datafile"], "w") do df
             time = Dates.format(Dates.now(), "dd/mm/yyy HH:MM")
             println(df, "# Janzen-Connell Model data file, created $time")
-            println(df, "# Settings: $settings")
+            println(df, "# settings = $settings")
             println(df, "Update,Species,Age,Size,Mature,X,Y")
         end
     end
@@ -150,25 +149,32 @@ end
 """
 The main simulation function.
 """
-function run(updates::Int=settings["runtime"])
+function run(updates::Int=-1)
     merge!(settings, parsecommandline())
     initRNG()
     initrecording()
+    @info "Initialising the world"
     initworld()
+    recorddata()
+    updates < 0 && (updates = settings["runtime"])
     for u in 1:updates
         @info "UPDATE $u"
         record = (u-1)%settings["datafreq"] == 0
         record && setupdate(u)
+        @info "Dispersal"
         disperse!()
+        @info "Competition"
         compete!()
+        @info "Growth"
         grow!()
+        #@info "Infection"
         #TODO pathogen spread
         record && recorddata()
     end
 end
 
 if !isinteractive()
-    run()
+    @time run()
 end
 
 end

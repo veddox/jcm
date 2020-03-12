@@ -31,10 +31,15 @@ function planttree!(tree::Tree,cons::Cons=forest)
             return
         elseif tree.position.x < cons.car.position.x
             # If the next tree in the list is further east, insert a new cons cell
-            newcons = Cons(tree,cons,cons.prev)
-            cons.prev.cdr = newcons
-            cons.prev = newcons
-            cons = newcons
+            if cons.prev != nothing #inserting in the middle
+                newcons = Cons(tree,cons,cons.prev)                
+                cons.prev.cdr = newcons
+                cons.prev = newcons
+            else #if we're inserting before the first cell
+                newcons = Cons(cons.car, cons.cdr, cons)
+                cons.car = tree
+                cons.cdr = newcons
+            end
             global forestlen += 1
             @debug "Planted a tree" tree.position.x tree.position.y
             return
@@ -55,14 +60,14 @@ function killtree!(tree::Tree,cons::Cons=forest)
         if cons.car == tree
             if cons.prev != nothing #excise a cons cell from the list
                 cons.prev.cdr = cons.cdr
-                cons.cdr != nothing ? cons.cdr.prev = cons.prev : nothing
+                cons.cdr != nothing && (cons.cdr.prev = cons.prev)
                 cons = nothing
             else
                 #removing the first tree is a bit more tricky, because the
                 #first cons cell (global variable `forest`) mustn't be deleted
                 if cons.cdr != nothing
                     cons.car = cons.cdr.car
-                    cons.cdr.cdr != nothing ? cons.cdr.cdr.prev = cons : nothing
+                    cons.cdr.cdr != nothing && (cons.cdr.cdr.prev = cons)
                     cons.cdr = cons.cdr.cdr
                 else
                     cons.car = nothing
@@ -83,21 +88,30 @@ end
 Produce seeds and disperse them in the landscape, planting them where possible
 """
 function disperse!(cons::Cons=forest)
+    i::Int16 = 1
     while cons != nothing
+        @debug "Reproducing tree $i"
         tree = cons.car
+        if !tree.mature
+            i += 1
+            cons = cons.cdr
+            continue
+        end
+        dx = tree.species.dispersal_distance
         # Each tree produces multiple seeds
         for s in 1:tree.species.seed_production
             #TODO implement a proper dispersal kernel
             # Find a random location in a circle around the tree
-            dx = tree.species.dispersal_distance
             sx = tree.position.x + rand(-dx:dx)
-            dy = sqrt(abs(dx^2-(sx-tree.position.x)^2))
+            dy = convert(Int16, round(sqrt(abs(dx^2-(sx-tree.position.x)^2))))
             sy = tree.position.y + rand(-dy:dy)
             if sx >= -settings["worldsize"] && sx <= settings["worldsize"] &&
                 sy >= -settings["worldsize"] && sy <= settings["worldsize"]
-                planttree!(tree)
+                seed = Tree(tree.species, sx, sy)
+                planttree!(seed)
             end
         end
+        i += 1
         cons = cons.cdr
     end
 end
