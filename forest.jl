@@ -22,29 +22,27 @@ Insert a new tree object at the correct position in the forest list.
 (Sorted by ascending x values.)
 """
 function planttree!(tree::Tree,cons::Cons=forest)
-    # What to do once a tree has been planted
-    function success()
-        global forestlen += 1
-        @debug "Planted a tree" tree.position.x tree.position.y
-    end
-    if !isa(cons.car, Tree)
-        # If we have an empty cons cell, plant the tree here
-        cons.car = tree
-        success()
-    elseif tree.position.x < cons.car.position.x
-        # If the next tree in the list is further east, insert a new cons cell
-        newcons = Cons(tree,cons,cons.prev)
-        cons.prev.cdr = newcons
-        cons.prev = newcons
-        cons = newcons
-        success()
-    else
-        # If we're at the end of the list, append a new cons cell
-        if cons.cdr == nothing
+    while cons != nothing
+        if !isa(cons.car, Tree)
+            # If we have an empty cons cell, plant the tree here
+            cons.car = tree
+            global forestlen += 1
+            @debug "Planted a tree" tree.position.x tree.position.y
+            return
+        elseif tree.position.x < cons.car.position.x
+            # If the next tree in the list is further east, insert a new cons cell
+            newcons = Cons(tree,cons,cons.prev)
+            cons.prev.cdr = newcons
+            cons.prev = newcons
+            cons = newcons
+            global forestlen += 1
+            @debug "Planted a tree" tree.position.x tree.position.y
+            return
+        elseif cons.cdr == nothing
+            # If we're at the end of the list, append a new cons cell
             cons.cdr = Cons(nothing,nothing,cons)
         end
-        # Recurse down the list until we can plant the tree
-        planttree!(tree,cons.cdr)
+        cons = cons.cdr
     end
 end
 
@@ -53,40 +51,39 @@ Remove a tree from the forest list.
 (Don't let Idefix see this function :D )
 """
 function killtree!(tree::Tree,cons::Cons=forest)
-    if cons.car == tree
-        if cons.prev != nothing #excise a cons cell from the list
-            cons.prev.cdr = cons.cdr
-            cons.cdr != nothing ? cons.cdr.prev = cons.prev : nothing
-            cons = nothing
-        else
-            #removing the first tree is a bit more tricky, because the
-            #first cons cell (global variable `forest`) mustn't be deleted
-            if cons.cdr != nothing
-                cons.car = cons.cdr.car
-                cons.cdr.cdr != nothing ? cons.cdr.cdr.prev = cons : nothing
-                cons.cdr = cons.cdr.cdr
+    while cons != nothing
+        if cons.car == tree
+            if cons.prev != nothing #excise a cons cell from the list
+                cons.prev.cdr = cons.cdr
+                cons.cdr != nothing ? cons.cdr.prev = cons.prev : nothing
+                cons = nothing
             else
-                cons.car = nothing
+                #removing the first tree is a bit more tricky, because the
+                #first cons cell (global variable `forest`) mustn't be deleted
+                if cons.cdr != nothing
+                    cons.car = cons.cdr.car
+                    cons.cdr.cdr != nothing ? cons.cdr.cdr.prev = cons : nothing
+                    cons.cdr = cons.cdr.cdr
+                else
+                    cons.car = nothing
+                end
             end
+            #cleanup and decrease the tree count
+            global forestlen -= 1
+            @debug "Killed a tree" tree.position.x tree.position.y
+            tree = nothing
+            return
         end
-        #cleanup and decrease the tree count
-        global forestlen -= 1
-        @debug "Killed a tree" tree.position.x tree.position.y
-        tree = nothing
-    elseif cons.cdr == nothing
-        @warn "Attempting to remove nonexistent tree."
-    else
-        killtree!(tree,cons.cdr)
+        cons = cons.cdr
     end
+    @warn "Attempted to remove nonexistent tree."
 end
 
 """
 Produce seeds and disperse them in the landscape, planting them where possible
 """
 function disperse!(cons::Cons=forest)
-    if cons == nothing
-        return
-    else
+    while cons != nothing
         tree = cons.car
         # Each tree produces multiple seeds
         for s in 1:tree.species.seed_production
@@ -101,7 +98,7 @@ function disperse!(cons::Cons=forest)
                 planttree!(tree)
             end
         end
-        disperse!(cons.cdr)
+        cons = cons.cdr
     end
 end
 
@@ -162,11 +159,9 @@ end
 Go through the landscape and check each tree for space conflicts
 """
 function compete!(cons::Cons=forest)
-    if cons == nothing
-        return
-    else
+    while cons != nothing
         compete_individual!(cons)
-        compete!(cons.cdr)
+        cons = cons.cdr
     end
 end
 
@@ -174,20 +169,19 @@ end
 All saplings grow until they reach maturity, then eventually die of old age.
 """
 function grow!(cons::Cons=forest)
-    if cons == nothing
-        return
-    else
+    while cons != nothing
         tree = cons.car
-        next = cons.cdr
-        if tree.age >= tree.species.max_age
-            killtree!(tree, cons)
-        elseif !tree.mature && tree.size < tree.species.max_size
+        if !tree.mature
             tree.size += tree.species.growth_rate
-        elseif !tree.mature && tree.size >= tree.species.max_size
-            tree.mature = true
+            tree.size >= tree.species.max_size && (tree.mature = true)
+            cons = cons.cdr
+        elseif tree.age >= tree.species.max_age
+            next = cons.cdr
+            killtree!(tree, cons)
+            cons = next
+            continue
         end
         tree.age += 1
         recordindividual(tree)
-        grow!(next)
     end
 end
