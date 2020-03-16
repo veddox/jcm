@@ -67,7 +67,7 @@ diversity levels.
 
 - `forest.jl` Contains all process functions.
 
-### References
+## References
 
 1. Comita, L. S., Queenborough, S. A., Murphy, S. J., Eck, J. L., Xu, K., 
 Krishnadas, M., Beckman, N., & Zhu, Y. (2014). Testing predictions of the 
