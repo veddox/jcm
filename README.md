@@ -11,8 +11,6 @@ longer-range seed dispersal to ensure low population densities for each species.
 This prevents any one species from becoming dominant and thus enables stable high 
 diversity levels.
 
-*TODO citations*
-
 ## Model description
 
 - 16 tree species (0x1 - 0xf), 1km² world
@@ -68,6 +66,23 @@ diversity levels.
 - `trees.jl` Contains all classes and their default values.
 
 - `forest.jl` Contains all process functions.
+
+### References
+
+1. Comita, L. S., Queenborough, S. A., Murphy, S. J., Eck, J. L., Xu, K., 
+Krishnadas, M., Beckman, N., & Zhu, Y. (2014). Testing predictions of the 
+Janzen–Connell hypothesis: A meta-analysis of experimental evidence for 
+distance- and density-dependent seed and seedling survival. Journal of Ecology, 
+102(4), 845–856. [https://doi.org/10.1111/1365-2745.12232](https://doi.org/10.1111/1365-2745.12232)
+
+2. Connell, J. H. (1971). On the role of natural enemies in preventing 
+competitive exclusion in some marine animals and in rain forest trees. 
+In P. J. den Boer & G. R. Gradwell (Eds.), Dynamics of Population 
+(pp. 298–312). Pudoc.
+
+3. Janzen, D. H. (1970). Herbivores and the Number of Tree Species in 
+Tropical Forests. The American Naturalist, 104(940), 501–528. 
+[https://doi.org/10.1086/282687](https://doi.org/10.1086/282687)
 
 ---
 &copy; 2020 Daniel Vedder
