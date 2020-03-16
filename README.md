@@ -61,6 +61,9 @@ diversity levels.
 
 ## Usage
 
+Running the model requires [Julia 1.3](https://julialang.org/downloads/) with the 
+[ArgParse](https://argparsejl.readthedocs.io/en/latest/argparse.html#) package.
+
 ```
 usage: jcm.jl [-n NSPECIES] [-w WORLDSIZE] [-t RUNTIME] [-f DATAFILE]
               [-d DATAFREQ] [-p] [-v VERBOSITY] [-s SEED] [--version]
@@ -97,6 +100,8 @@ JCM 1.0.0-rc1, (c) 2020 Daniel Vedder
 Ecosystem Modelling Group, University of Würzburg
 ```
 
+The visualisation script `analyse.R` requires R with the packages `ggplot2`, `ggforce`, and `gganimate`.
+
 ## Source files
 
 - `jcm.jl` The main module file. Import this to run the model.
@@ -104,6 +109,8 @@ Ecosystem Modelling Group, University of Würzburg
 - `trees.jl` Contains all classes and their default values.
 
 - `forest.jl` Contains all process functions.
+
+- `analyse.R` Visualise model output.
 
 ## References
 

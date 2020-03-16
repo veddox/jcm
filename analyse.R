@@ -11,6 +11,7 @@ library(gganimate)
 
 datafile = "jcm_data.csv"
 
+## Plot a map of the simulation arena for this update
 plot_map = function(update, data, mapname="map") {
     ggplot(data=data[which(data$Update==update),]) +
         geom_circle(mapping=aes(x0=X, y0=Y, r=Size, fill=as.factor(Species)),
@@ -28,6 +29,7 @@ plot_map = function(update, data, mapname="map") {
     ggsave(paste0(mapname,"_",update,".jpg"))
 }
 
+## Plot a series of maps for this simulation run
 plot_series = function(dfile=datafile, simname="jcm_run") {
     d = read.csv(dfile, comment.char="#")
     for (u in unique(d$Update)) {
@@ -35,6 +37,7 @@ plot_series = function(dfile=datafile, simname="jcm_run") {
     }
 }
 
+## Create an animated GIF of the simulation map over time
 render_gif = function(dfile=datafile) {
     d = read.csv(dfile, comment.char="#")
     ##TODO doesn't seem to work yet?
@@ -57,13 +60,31 @@ render_gif = function(dfile=datafile) {
     animate(gp, renderer=gifski_renderer("run.gif"))
 }
 
+## Calculate Shannon diversity and equitability for one update
+## (cf. Begon, Townsend & Harper (2006), p.471)
+shannon = function(udata) {
+    species = unique(udata$Species)
+    p = sapply(species, function(s) dim(udata[which(udata$Species==s),])[1]/dim(udata)[1])
+    h = sum(sapply(p, function(i) i * log(i))) * -1
+    j = h / log(length(species))
+    return(c(h,j))
+}
+
+## Plot population and diversity development over time
 plot_statistics = function(dfile=datafile, simname="jcm_run", toFile=TRUE) {
     d = read.csv(dfile, comment.char="#")
-    if (toFile) jpeg(paste0(simname,"_stats.jpg"), height=480, width=720)
-    popsize = sapply(unique(d$Update), function(u) dim(d[which(d$Update==u),])[1])
-    plot(popsize, xlab="Time", ylab="Population size", type="l", col="blue")
-    ##TODO diversity (Shannon-Wiener Index)
-    ##XXX evenness?
+    if (toFile) jpeg(paste0(simname,"_stats.jpg"), height=720, width=720)
+    updates = unique(d$Update)
+    popsize = sapply(updates, function(u) dim(d[which(d$Update==u),])[1])
+    shdiv = sapply(updates, function(u) shannon(d[which(d$Update==u),]))
+    diversity = shdiv[1,]
+    equitability = shdiv[2,]
+    par(mfrow=c(2,1), mai=c(0.9, 0.9, 0.2, 0.2))
+    plot(updates, popsize, ylab="Population size", type="l", col="orange",
+         xlab="Time")
+    plot(updates, diversity, col="green", type="l", xlab="Time",
+         ylab="Diversity", ylim=c(0, max(diversity)+0.5))
+    lines(updates, equitability, col="blue")
     if (toFile) dev.off()
 }
 
@@ -71,5 +92,4 @@ plot_statistics = function(dfile=datafile, simname="jcm_run", toFile=TRUE) {
 ##
 ## * GIF animations
 ## * show infected trees
-## * record abundance & diversity
 ##
