@@ -3,3 +3,4 @@ jcm.glade
 *.csv
 *.jpg
 results/
+.R*

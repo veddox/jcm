@@ -59,6 +59,44 @@ diversity levels.
   - test more generalistic pathogens
   - possibly also coevolution
 
+## Usage
+
+```
+usage: jcm.jl [-n NSPECIES] [-w WORLDSIZE] [-t RUNTIME] [-f DATAFILE]
+              [-d DATAFREQ] [-p] [-v VERBOSITY] [-s SEED] [--version]
+              [-h]
+
+Investigate the Janzen-Connell effect in a forest model.
+
+optional arguments:
+  -n, --nspecies NSPECIES
+                        the number of tree species to simulate (type:
+                        Int64, default: 16)
+  -w, --worldsize WORLDSIZE
+                        the extent from the center of the square world
+                        arena in meters (type: Int64, default: 500)
+  -t, --runtime RUNTIME
+                        the number of updates the simulation will run
+                        (type: Int64, default: 500)
+  -f, --datafile DATAFILE
+                        the file to which simulation data is written
+                        (default: "jcm_data.csv")
+  -d, --datafreq DATAFREQ
+                        the frequency in updates with which data is
+                        recorded (type: Int64, default: 10)
+  -p, --pathogens       run a simulation with pathogens
+  -v, --verbosity VERBOSITY
+                        set the log level (Debug, Info, Warn, Error)
+                        (default: "Info")
+  -s, --seed SEED       set the seed for the RNG (0 -> random seed)
+                        (type: Int64, default: 0)
+  --version             show version information and exit
+  -h, --help            show this help message and exit
+
+JCM 1.0.0-rc1, (c) 2020 Daniel Vedder
+Ecosystem Modelling Group, University of Würzburg
+```
+
 ## Source files
 
 - `jcm.jl` The main module file. Import this to run the model.
