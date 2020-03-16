@@ -17,6 +17,7 @@ end
 Species(id) = Species(id, 200, 25, 2, 20, 200, 0)
 
 mutable struct Tree
+    #TODO individual ID?
     species::Species
     age::Int16
     size::Int8

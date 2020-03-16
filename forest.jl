@@ -27,7 +27,7 @@ function planttree!(tree::Tree,cons::Cons=forest)
             # If we have an empty cons cell, plant the tree here
             cons.car = tree
             global forestlen += 1
-            @debug "Planted a tree" tree.position.x tree.position.y
+            @debug "Planted tree @$(tree.position.x)/$(tree.position.y)"
             return
         elseif tree.position.x < cons.car.position.x
             # If the next tree in the list is further east, insert a new cons cell
@@ -41,7 +41,7 @@ function planttree!(tree::Tree,cons::Cons=forest)
                 cons.cdr = newcons
             end
             global forestlen += 1
-            @debug "Planted a tree" tree.position.x tree.position.y
+            @debug "Planted tree @$(tree.position.x)/$(tree.position.y)"
             return
         elseif cons.cdr == nothing
             # If we're at the end of the list, append a new cons cell
@@ -55,7 +55,7 @@ end
 Remove a tree from the forest list.
 (Don't let Idefix see this function :D )
 """
-function killtree!(tree::Tree,cons::Cons=forest)
+function killtree!(tree::Tree,cons::Cons=forest,reason::String="malice aforethought")
     while cons != nothing
         if cons.car == tree
             if cons.prev != nothing #excise a cons cell from the list
@@ -75,7 +75,7 @@ function killtree!(tree::Tree,cons::Cons=forest)
             end
             #cleanup and decrease the tree count
             global forestlen -= 1
-            @debug "Killed a tree" tree.position.x tree.position.y
+            @debug "Killed tree @$(tree.position.x)/$(tree.position.y) because of $(reason)"
             tree = nothing
             return
         end
@@ -90,13 +90,13 @@ Produce seeds and disperse them in the landscape, planting them where possible
 function disperse!(cons::Cons=forest)
     i::Int16 = 1
     while cons != nothing
-        @debug "Reproducing tree $i"
         tree = cons.car
         if !tree.mature
             i += 1
             cons = cons.cdr
             continue
         end
+        @debug "Reproducing tree $i"
         dx = tree.species.dispersal_distance
         # Each tree produces multiple seeds
         for s in 1:tree.species.seed_production
@@ -117,54 +117,60 @@ function disperse!(cons::Cons=forest)
 end
 
 """
-Test whether two trees intersect. A positive return value indicates conflict.
-0: no intersection; 1: the first tree is larger; 2: the second tree is larger
+Test whether the trees in two cons cells intersect, and if so, kill the
+smaller tree. The integer return value indicates the outcome:
+0 - no intersection (no tree killed)
+1 - the first tree is larger (second tree killed)
+2 - the second tree is larger (first tree killed)
+Needed by `compete_individual!()`
 """
-function inconflict(tree1::Tree, tree2::Tree)::UInt8
+function compete_pair!(cons1::Cons, cons2::Cons)::UInt8
+    tree1 = cons1.car
+    tree2 = cons2.car
+    (tree1 == nothing || tree2 == nothing) && return
     mindist = (tree1.size + tree2.size)/2
     dx = abs(tree1.position.x - tree2.position.x)
     dy = abs(tree1.position.y - tree2.position.y)
     if  dx >= mindist || dy >= mindist || hypot(dx,dy) >= mindist
         return 0
+    elseif tree1.size > tree2.size
+        killtree!(tree2, cons2, "competition")
+        return 1
     else
-        tree1.size > tree2.size ? 1 : 2
+        killtree!(tree1, cons1, "competition")
+        return 2
     end
 end
 
 """
 Check whether the tree in this cons cell conflicts with trees in the
 vicinity and, if so, kill the smaller one.
+Needed by `compete!()`
 """
+#FIXME This doesn't seem to work as intended yet
+# (trees die when they're not supposed to, or don't die when they should)
 function compete_individual!(cons::Cons)
     tree = cons.car
     # go right until we're sure we won't find any more conflicts
     next = cons.cdr
     while next != nothing && abs(next.car.position.x - tree.position.x) < (tree.size/2)+2^7
-        conflict = inconflict(tree, next.car)
+        next2 = next.cdr # We have to save the coming step already, in case `next` is killed
+        conflict = compete_pair!(cons, next)
         if conflict == 2
-            killtree!(tree, cons)
-            return
-        elseif conflict == 1
-            killcell = next
-            next = next.cdr
-            killtree!(killcell.car, killcell)
-        elseif conflict == 0
-            next = next.cdr
+            return # This tree was killed, so we can break off
+        else # otherwise, keep going
+            next = next2
         end
     end
     # then go left and repeat
     next = cons.prev
     while next != nothing && abs(next.car.position.x - tree.position.x) < (tree.size/2)+2^7
-        conflict = inconflict(tree, next.car)
+        next2 = next.prev
+        conflict = compete_pair!(cons, next)
         if conflict == 2
-            killtree!(tree, cons)
             return
-        elseif conflict == 1
-            killcell = next
-            next = next.prev
-            killtree!(killcell.car, killcell)
-        elseif conflict == 0        
-            next = next.prev
+        else
+            next = next2
         end
     end
 end
@@ -185,17 +191,16 @@ All saplings grow until they reach maturity, then eventually die of old age.
 function grow!(cons::Cons=forest)
     while cons != nothing
         tree = cons.car
+        next = cons.cdr
         if !tree.mature
             tree.size += tree.species.growth_rate
             tree.size >= tree.species.max_size && (tree.mature = true)
-            cons = cons.cdr
         elseif tree.age >= tree.species.max_age
-            next = cons.cdr
-            killtree!(tree, cons)
-            cons = next
+            killtree!(tree, cons, "old age")
             continue
         end
         tree.age += 1
+        cons = next
         recordindividual(tree)
     end
 end

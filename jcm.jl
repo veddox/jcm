@@ -20,7 +20,7 @@ using Dates,
 
 const settings = Dict("nspecies" => 16,             # The number of species that will be created
                       "worldsize" => 500,           # The extent from the center of the square world arena in meters
-                      "runtime" => 1000,            # The number of updates the simulation will run
+                      "runtime" => 500,             # The number of updates the simulation will run
                       "datafile" => "jcm_data.csv", # The name of the recorded data file
                       "datafreq" => 10,             # How long between data recordings?
                       "pathogens" => false,         # Include pathogens in the simulation?
@@ -159,7 +159,7 @@ function run(updates::Int=-1)
     updates < 0 && (updates = settings["runtime"])
     for u in 1:updates
         @info "UPDATE $u"
-        record = (u-1)%settings["datafreq"] == 0
+        record = u%settings["datafreq"] == 0
         record && setupdate(u)
         @info "Dispersal"
         disperse!()
