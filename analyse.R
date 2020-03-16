@@ -11,7 +11,7 @@ library(gganimate)
 
 datafile = "jcm_data.csv"
 
-plot_static = function(update, data, mapname="map") {
+plot_map = function(update, data, mapname="map") {
     ggplot(data=data[which(data$Update==update),]) +
         geom_circle(mapping=aes(x0=X, y0=Y, r=Size, fill=as.factor(Species)),
                     show.legend=FALSE) +
@@ -28,16 +28,16 @@ plot_static = function(update, data, mapname="map") {
     ggsave(paste0(mapname,"_",update,".jpg"))
 }
 
-plot_series = function(dfile=datafile) { #XXX mapname?
+plot_series = function(dfile=datafile, simname="jcm_run") {
     d = read.csv(dfile, comment.char="#")
     for (u in unique(d$Update)) {
-        plot_static(u, d)
+        plot_map(u, d, simname)
     }
 }
 
 render_gif = function(dfile=datafile) {
     d = read.csv(dfile, comment.char="#")
-    ##TODO
+    ##TODO doesn't seem to work yet?
     gp = ggplot(data=d) +
         geom_circle(mapping=aes(x0=X, y0=Y, r=Size, fill=as.factor(Species)),
                     show.legend=FALSE) +
@@ -57,10 +57,19 @@ render_gif = function(dfile=datafile) {
     animate(gp, renderer=gifski_renderer("run.gif"))
 }
 
+plot_statistics = function(dfile=datafile, simname="jcm_run", toFile=TRUE) {
+    d = read.csv(dfile, comment.char="#")
+    if (toFile) jpeg(paste0(simname,"_stats.jpg"), height=480, width=720)
+    popsize = sapply(unique(d$Update), function(u) dim(d[which(d$Update==u),])[1])
+    plot(popsize, xlab="Time", ylab="Population size", type="l", col="blue")
+    ##TODO diversity (Shannon-Wiener Index)
+    ##XXX evenness?
+    if (toFile) dev.off()
+}
 
 ## --- TODO ---
 ##
 ## * GIF animations
 ## * show infected trees
-## * record diversity
+## * record abundance & diversity
 ##
