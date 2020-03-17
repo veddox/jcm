@@ -11,7 +11,7 @@
 
 module jcm
 
-const jcm_version = v"1.0-rc1"
+const jcm_version = v"1.0-rc2"
 
 using Dates,
     ArgParse,
@@ -86,15 +86,16 @@ end
 """
 Initialise the world with one mature tree from each species at a random location.
 """
-function initworld()
+function initworld(pathogens=false)
     createspecies()
     for n in 1:settings["nspecies"]
         ws = settings["worldsize"]
         xpos = rand(-ws:ws)
         ypos = rand(-ws:ws)
         sp = getspecies(n)
+        pathogens? infection = Pathogen(n) : infection = nothing
         tree = Tree(sp, convert(Int16, round(sp.max_age/2)),
-                    sp.max_size, true, (x=xpos, y=ypos))
+                    sp.max_size, true, infection, (x=xpos, y=ypos))
         recordindividual(tree)
         planttree!(tree)
     end

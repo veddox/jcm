@@ -21,6 +21,8 @@ plot_map = function(update, data, mapname="map") {
         coord_fixed(ratio=1, xlim=c(-500,500), ylim=c(-500,500)) +
         scale_colour_manual(values=rainbow(max(data$Species))) +
         scale_size_continuous(range=c(min(data$Size)/5,max(data$Size)/5)) +
+        ##XXX this could probably be done with ggforce:
+        ##theme_no_axes(theme_grey())
         theme(panel.background=element_rect(colour="black",size=1,fill="lightgray"),
               panel.grid=element_blank(),
               axis.title=element_blank(),

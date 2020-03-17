@@ -203,3 +203,64 @@ function grow!(cons::Cons=forest)
         recordindividual(tree)
     end
 end
+
+"""
+An infected tree in the given cons cell spreads its infection
+"""
+function spread_infection(cons::Cons)
+    tree = cons.car
+    pathogen = tree.infection
+    maxdist = pathogen.infection_radius
+    # go right until we're sure we're out of the infection range
+    next = cons.cdr
+    while next != nothing && abs(next.car.position.x - tree.position.x) < maxdist
+        tree2 = next.car
+        dist = hypot(abs(tree1.position.x-tree2.position.x),
+                     abs(tree1.position.y-tree2.position.y))
+        prob = (pathogen.infection_rate-tree2.species.pathogen_resistance)*((maxdist-dist)/max_dist)
+        #A tree is infected if...
+        if dist <= maxdist && #... it's within range
+            tree2.infection == nothing && #... it isn't infected anyway
+            tree2.species.id == tree.species.id && #... it belongs to the same species
+            prob > rand(Float16) #... it passes a random draw dependent on its resistance and distance
+            tree2.infected = pathogen
+            @debug "Infected tree @$(tree2.position.x)/$(tree2.position.y)"
+        end
+        next = next.cdr
+    end
+    # then go left and repeat
+    next = cons.prev
+    while next != nothing && abs(next.car.position.x - tree.position.x) < maxdist
+        tree2 = next.car
+        dist = hypot(abs(tree1.position.x-tree2.position.x),
+                     abs(tree1.position.y-tree2.position.y))
+        prob = (pathogen.infection_rate-tree2.species.pathogen_resistance)*((maxdist-dist)/max_dist)
+        if dist <= maxdist &&
+            tree2.infection == nothing &&
+            tree2.species.id == tree.species.id &&
+            prob > rand(Float16)
+            tree2.infected = pathogen
+            @debug "Infected tree @$(tree2.position.x)/$(tree2.position.y)"            
+        end
+        next = cons.prev
+    end
+end
+
+"""
+Carry out the pathogen spread phase and check for mortality
+"""
+function infect!(cons::Cons=forest)
+    while cons != nothing
+        tree = cons.car
+        next = cons.cdr
+        if tree.infection != nothing
+            pathogen = tree.infection
+            # pathogens have a one-update incubation period
+            pathogen.infectious ? spread_infection(cons) : pathogen.infectious = true
+            if pathogen.lethality > rand(Float16)
+                killtree!(tree, cons, "disease")
+            end
+        end
+        cons = next
+    end
+end
