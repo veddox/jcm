@@ -16,29 +16,29 @@ end
 #The default species
 Species(id) = Species(id, 150, 25, 2, 10, 200, 0)
 
+mutable struct Pathogen
+    infectious::Bool
+    infection_rate::Float16
+    infection_radius::Int16
+    lethality::Float16
+    host::UInt8
+end
+
+#The default pathogen
+Pathogen(host) = Pathogen(false, 0.8, 50, 0.1, host)
+
 mutable struct Tree
     #TODO individual ID?
     species::Species
     age::Int16
     size::Int8
     mature::Bool
-    infection::Pathogen
+    infection::Union{Pathogen,Nothing}
     position::NamedTuple{(:x, :y), Tuple{Int16,Int16}}
 end
 
 #Create a seed
 Tree(sp, xpos, ypos) = Tree(sp, 0, 1, false, nothing, (x=xpos, y=ypos))
-
-mutable struct Pathogen
-    infectious::Bool
-    infection_rate::Float16
-    infection_radius::UInt16
-    lethality::Float16
-    host::UInt8
-end
-
-#The default pathogen
-Pathogen(host) = Pathogen(false, 0.5, 50, 0.1, host)
 
 let species::Vector{Species} = Vector{Species}(undef,settings["nspecies"])
 

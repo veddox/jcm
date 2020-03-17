@@ -215,15 +215,15 @@ function spread_infection(cons::Cons)
     next = cons.cdr
     while next != nothing && abs(next.car.position.x - tree.position.x) < maxdist
         tree2 = next.car
-        dist = hypot(abs(tree1.position.x-tree2.position.x),
-                     abs(tree1.position.y-tree2.position.y))
-        prob = (pathogen.infection_rate-tree2.species.pathogen_resistance)*((maxdist-dist)/max_dist)
+        dist = hypot(abs(tree.position.x-tree2.position.x),
+                     abs(tree.position.y-tree2.position.y))
+        prob = (pathogen.infection_rate-tree2.species.pathogen_resistance)*((maxdist-dist)/maxdist)
         #A tree is infected if...
         if dist <= maxdist && #... it's within range
             tree2.infection == nothing && #... it isn't infected anyway
             tree2.species.id == tree.species.id && #... it belongs to the same species
             prob > rand(Float16) #... it passes a random draw dependent on its resistance and distance
-            tree2.infected = pathogen
+            tree2.infection = pathogen
             @debug "Infected tree @$(tree2.position.x)/$(tree2.position.y)"
         end
         next = next.cdr
@@ -232,17 +232,17 @@ function spread_infection(cons::Cons)
     next = cons.prev
     while next != nothing && abs(next.car.position.x - tree.position.x) < maxdist
         tree2 = next.car
-        dist = hypot(abs(tree1.position.x-tree2.position.x),
-                     abs(tree1.position.y-tree2.position.y))
-        prob = (pathogen.infection_rate-tree2.species.pathogen_resistance)*((maxdist-dist)/max_dist)
+        dist = hypot(abs(tree.position.x-tree2.position.x),
+                     abs(tree.position.y-tree2.position.y))
+        prob = (pathogen.infection_rate-tree2.species.pathogen_resistance)*((maxdist-dist)/maxdist)
         if dist <= maxdist &&
             tree2.infection == nothing &&
             tree2.species.id == tree.species.id &&
             prob > rand(Float16)
-            tree2.infected = pathogen
-            @debug "Infected tree @$(tree2.position.x)/$(tree2.position.y)"            
+            tree2.infection = pathogen
+            @debug "Infected tree @$(tree2.position.x)/$(tree2.position.y)"
         end
-        next = cons.prev
+        next = next.prev
     end
 end
 

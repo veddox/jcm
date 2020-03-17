@@ -86,14 +86,14 @@ end
 """
 Initialise the world with one mature tree from each species at a random location.
 """
-function initworld(pathogens=false)
+function initworld()
     createspecies()
     for n in 1:settings["nspecies"]
         ws = settings["worldsize"]
         xpos = rand(-ws:ws)
         ypos = rand(-ws:ws)
         sp = getspecies(n)
-        pathogens? infection = Pathogen(n) : infection = nothing
+        settings["pathogens"] ? infection = Pathogen(n) : infection = nothing
         tree = Tree(sp, convert(Int16, round(sp.max_age/2)),
                     sp.max_size, true, infection, (x=xpos, y=ypos))
         recordindividual(tree)
@@ -115,10 +115,10 @@ let updatelog::String = "", update=0
     Called during `grow!()`
     """
     global function recordindividual(tree::Tree)
-        #TODO include infection status
         update < 0 && return # block unless we've reached a recording point
         datastring = "$update,$(tree.species.id),$(tree.age),$(tree.size)"
-        datastring *= ",$(tree.mature),$(tree.position.x),$(tree.position.y)"
+        datastring *= ",$(tree.mature ? "TRUE" : "FALSE"),$(tree.infection == nothing ? "TRUE" : "FALSE")"
+        datastring *= ",$(tree.position.x),$(tree.position.y)"
         updatelog *= datastring * "\n"
     end
     
@@ -143,7 +143,7 @@ let updatelog::String = "", update=0
             time = Dates.format(Dates.now(), "dd/mm/yyy HH:MM")
             println(df, "# Janzen-Connell Model data file, created $time")
             println(df, "# settings = $settings")
-            println(df, "Update,Species,Age,Size,Mature,X,Y")
+            println(df, "Update,Species,Age,Size,Mature,Infected,X,Y")
         end
     end
 end
@@ -169,10 +169,12 @@ function run(updates::Int=-1, noinit::Bool=false)
         disperse!()
         @info "Competition"
         compete!()
+        if settings["pathogens"]
+            @info "Infection"
+            infect!()
+        end
         @info "Growth"
         grow!()
-        #@info "Infection"
-        #TODO pathogen spread
         record && recorddata()
     end
 end
