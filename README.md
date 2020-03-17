@@ -1,5 +1,7 @@
 # Janzen-Connell Model
 
+*See `project.md` for more information.*
+
 ## Background
 
 The Janzen-Connell Effect explains how density-dependent mortality helps to
