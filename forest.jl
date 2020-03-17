@@ -147,8 +147,6 @@ Check whether the tree in this cons cell conflicts with trees in the
 vicinity and, if so, kill the smaller one.
 Needed by `compete!()`
 """
-#FIXME This doesn't seem to work as intended yet
-# (trees die when they're not supposed to, or don't die when they should)
 function compete_individual!(cons::Cons)
     tree = cons.car
     # go right until we're sure we won't find any more conflicts

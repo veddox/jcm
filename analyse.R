@@ -14,7 +14,9 @@ datafile = "jcm_data.csv"
 ## Plot a map of the simulation arena for this update
 plot_map = function(update, data, mapname="map") {
     ggplot(data=data[which(data$Update==update),]) +
-        geom_circle(mapping=aes(x0=X, y0=Y, r=Size, fill=as.factor(Species)),
+        ##TODO keep fill colour constant across time
+        ##TODO change line colour depending on infection status
+        geom_circle(mapping=aes(x0=X, y0=Y, r=(Size/2), fill=as.factor(Species)),
                     show.legend=FALSE) +
         coord_fixed(ratio=1, xlim=c(-500,500), ylim=c(-500,500)) +
         scale_colour_manual(values=rainbow(max(data$Species))) +
@@ -85,6 +87,7 @@ plot_statistics = function(dfile=datafile, simname="jcm_run", toFile=TRUE) {
     plot(updates, diversity, col="green", type="l", xlab="Time",
          ylab="Diversity", ylim=c(0, max(diversity)+0.5))
     lines(updates, equitability, col="blue")
+    #TODO add legend
     if (toFile) dev.off()
 }
 

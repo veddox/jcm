@@ -114,6 +114,7 @@ let updatelog::String = "", update=0
     Called during `grow!()`
     """
     global function recordindividual(tree::Tree)
+        #TODO include infection status
         update < 0 && return # block unless we've reached a recording point
         datastring = "$update,$(tree.species.id),$(tree.age),$(tree.size)"
         datastring *= ",$(tree.mature),$(tree.position.x),$(tree.position.y)"
@@ -149,12 +150,14 @@ end
 """
 The main simulation function.
 """
-function run(updates::Int=-1)
+function run(updates::Int=-1, noinit::Bool=false)
     merge!(settings, parsecommandline())
     initRNG()
     initrecording()
-    @info "Initialising the world"
-    initworld()
+    if !noinit #intended for use by test functions
+        @info "Initialising the world"
+        initworld()
+    end
     recorddata()
     updates < 0 && (updates = settings["runtime"])
     for u in 1:updates
