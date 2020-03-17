@@ -14,7 +14,7 @@ struct Species
 end
 
 #The default species
-Species(id) = Species(id, 200, 25, 2, 10, 200, 0)
+Species(id) = Species(id, 150, 25, 2, 10, 200, 0)
 
 mutable struct Tree
     #TODO individual ID?

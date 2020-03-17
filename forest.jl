@@ -195,6 +195,7 @@ function grow!(cons::Cons=forest)
             tree.size >= tree.species.max_size && (tree.mature = true)
         elseif tree.age >= tree.species.max_age
             killtree!(tree, cons, "old age")
+            cons = next
             continue
         end
         tree.age += 1
