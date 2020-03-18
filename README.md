@@ -55,7 +55,7 @@ diversity levels.
   - control: pathogens excluded; treatment: pathogens present
   - measure alpha/gamma diversity over time
   
-- Extended experiment:
+- Possible extended experiments:
   - vary traits between species
   - allow traits to evolve
   - test more generalistic pathogens

@@ -15,13 +15,13 @@ datafile = "jcm_data.csv"
 plot_map = function(update, data, mapname="map") {
     ggplot(data=data[which(data$Update==update),]) +
         ##TODO keep fill colour constant across time
-        ##TODO change line colour depending on infection status
-        geom_circle(mapping=aes(x0=X, y0=Y, r=(Size/2), fill=as.factor(Species)),
-                    show.legend=FALSE) +
+        geom_circle(mapping=aes(x0=X, y0=Y, r=(Size/2), fill=as.factor(Species),
+                    color=Infected), show.legend=FALSE) +
         coord_fixed(ratio=1, xlim=c(-500,500), ylim=c(-500,500)) +
-        scale_colour_manual(values=rainbow(max(data$Species))) +
+        scale_fill_manual(values=rainbow(max(data$Species))) +
+        scale_color_manual(values=c("red", "black")) +
         scale_size_continuous(range=c(min(data$Size)/5,max(data$Size)/5)) +
-        ##XXX this could probably be done with ggforce:
+        ##XXX this could probably have been done with ggforce:
         ##theme_no_axes(theme_grey())
         theme(panel.background=element_rect(colour="black",size=1,fill="lightgray"),
               panel.grid=element_blank(),
@@ -42,9 +42,10 @@ plot_series = function(dfile=datafile, simname="jcm_run") {
 }
 
 ## Create an animated GIF of the simulation map over time
+##XXX Do I really need this?
 render_gif = function(dfile=datafile) {
     d = read.csv(dfile, comment.char="#")
-    ##TODO doesn't seem to work yet?
+    ##TODO doesn't seem to work yet? Or does it just take forever to render?
     gp = ggplot(data=d) +
         geom_circle(mapping=aes(x0=X, y0=Y, r=Size, fill=as.factor(Species)),
                     show.legend=FALSE) +
@@ -96,5 +97,4 @@ plot_statistics = function(dfile=datafile, simname="jcm_run", toFile=TRUE) {
 ## --- TODO ---
 ##
 ## * GIF animations
-## * show infected trees
 ##

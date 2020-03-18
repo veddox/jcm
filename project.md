@@ -1,6 +1,6 @@
 # Project details
 
-*Janzen-Connell Model*
+*JCM: a simple forest model to explore the Janzen-Connell effect.*
 
 ## Author
 
@@ -18,7 +18,7 @@ University of Würzburg
 
 - **v1.0-rc3** Adds variable species.
 
-- **v1.0** Finished version (i.e. v1.0-rc3 with more testing).
+- **v1.0** Finished version, including the scripted experiment.
 
 ## License
 
