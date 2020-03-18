@@ -67,14 +67,14 @@ Running the model requires [Julia 1.3](https://julialang.org/downloads/) with th
 [ArgParse](https://argparsejl.readthedocs.io/en/latest/argparse.html#) package.
 
 ```
-usage: jcm.jl [-n NSPECIES] [-w WORLDSIZE] [-t RUNTIME] [-f DATAFILE]
-              [-d DATAFREQ] [-p] [-v VERBOSITY] [-s SEED] [--version]
-              [-h]
+usage: jcm.jl [-s SPECIES] [-w WORLDSIZE] [-t RUNTIME] [-f DATAFILE]
+              [-d DATAFREQ] [-p] [-n] [-v VERBOSITY] [-r SEED]
+              [--version] [-h]
 
 Investigate the Janzen-Connell effect in a forest model.
 
 optional arguments:
-  -n, --nspecies NSPECIES
+  -s, --species SPECIES
                         the number of tree species to simulate (type:
                         Int64, default: 16)
   -w, --worldsize WORLDSIZE
@@ -90,15 +90,16 @@ optional arguments:
                         the frequency in updates with which data is
                         recorded (type: Int64, default: 10)
   -p, --pathogens       run a simulation with pathogens
+  -n, --neutral         all species have identical trait values
   -v, --verbosity VERBOSITY
                         set the log level (Debug, Info, Warn, Error)
                         (default: "Info")
-  -s, --seed SEED       set the seed for the RNG (0 -> random seed)
+  -r, --seed SEED       set the seed for the RNG (0 -> random seed)
                         (type: Int64, default: 0)
   --version             show version information and exit
   -h, --help            show this help message and exit
 
-JCM 1.0.0-rc1, (c) 2020 Daniel Vedder
+JCM 1.0.0-rc3, (c) 2020 Daniel Vedder
 Ecosystem Modelling Group, University of Würzburg
 ```
 

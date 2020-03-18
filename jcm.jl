@@ -11,19 +11,20 @@
 
 module jcm
 
-const jcm_version = v"1.0-rc2"
+const jcm_version = v"1.0-rc3"
 
 using Dates,
     ArgParse,
     Logging,
     Random
 
-const settings = Dict("nspecies" => 16,             # The number of species that will be created
+const settings = Dict("species" => 16,              # The number of species that will be created
                       "worldsize" => 500,           # The extent from the center of the square world arena in meters
                       "runtime" => 500,             # The number of updates the simulation will run
                       "datafile" => "jcm_data.csv", # The name of the recorded data file
                       "datafreq" => 10,             # How long between data recordings?
                       "pathogens" => false,         # Include pathogens in the simulation?
+                      "neutral" => false,           # All species have identical trait values?
                       "verbosity" => "Info",        # The log level (Debug, Info, Warn, Error)
                       "seed" => 0)                  # The seed for the RNG (0 -> random)
 
@@ -38,10 +39,10 @@ function parsecommandline()
                          description="Investigate the Janzen-Connell effect in a forest model.",
                          epilog="JCM $jcm_version, (c) 2020 Daniel Vedder \n\nEcosystem Modelling Group, University of Würzburg")
     @add_arg_table! s begin
-        "--nspecies", "-n"
+        "--species", "-s"
         help = "the number of tree species to simulate"
         arg_type = Int
-        default = settings["nspecies"]
+        default = settings["species"]
         "--worldsize", "-w"
         help = "the extent from the center of the square world arena in meters"
         arg_type = Int
@@ -61,11 +62,14 @@ function parsecommandline()
         "--pathogens", "-p"
         help = "run a simulation with pathogens"
         action = :store_true
+        "--neutral", "-n"
+        help = "all species have identical trait values"
+        action = :store_true
         "--verbosity", "-v"
         help = "set the log level (Debug, Info, Warn, Error)"
         arg_type = String
         default = settings["verbosity"]
-        "--seed", "-s"
+        "--seed", "-r"
         help = "set the seed for the RNG (0 -> random seed)"
         arg_type = Int
         default = settings["seed"]
@@ -88,7 +92,7 @@ Initialise the world with one mature tree from each species at a random location
 """
 function initworld()
     createspecies()
-    for n in 1:settings["nspecies"]
+    for n in 1:settings["species"]
         ws = settings["worldsize"]
         xpos = rand(-ws:ws)
         ypos = rand(-ws:ws)
@@ -117,7 +121,7 @@ let updatelog::String = "", update=0
     global function recordindividual(tree::Tree)
         update < 0 && return # block unless we've reached a recording point
         datastring = "$update,$(tree.species.id),$(tree.age),$(tree.size)"
-        datastring *= ",$(tree.mature ? "TRUE" : "FALSE"),$(tree.infection == nothing ? "TRUE" : "FALSE")"
+        datastring *= ",$(tree.mature ? "TRUE" : "FALSE"),$(tree.infection == nothing ? "FALSE" : "TRUE")"
         datastring *= ",$(tree.position.x),$(tree.position.y)"
         updatelog *= datastring * "\n"
     end

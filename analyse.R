@@ -19,6 +19,7 @@ plot_map = function(update, data, mapname="map") {
                     color=Infected), show.legend=FALSE) +
         coord_fixed(ratio=1, xlim=c(-500,500), ylim=c(-500,500)) +
         scale_fill_manual(values=rainbow(max(data$Species))) +
+        #FIXME when there are no pathogens, all circles are red
         scale_color_manual(values=c("red", "black")) +
         scale_size_continuous(range=c(min(data$Size)/5,max(data$Size)/5)) +
         ##XXX this could probably have been done with ggforce:

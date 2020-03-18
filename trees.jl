@@ -40,16 +40,38 @@ end
 #Create a seed
 Tree(sp, xpos, ypos) = Tree(sp, 0, 1, false, nothing, (x=xpos, y=ypos))
 
-let species::Vector{Species} = Vector{Species}(undef,settings["nspecies"])
+"""
+Vary a number i randomly  by up to +/- p% (utility function)
+"""
+function vary(i::Number; p::Int=25)
+    i == 0 && return 0
+    v = (p/100) * i
+    isa(i, AbstractFloat) ? s = i/100 : s = 1
+    n = i + rand(-v:s:v)
+    return n
+end
+
+let species::Vector{Species} = Vector{Species}(undef,settings["species"])
 
     """
     Initialise all species. If `default` is true, use the standard trait values,
     otherwise create variable species.
     """
-    global function createspecies(default=true)
-        !default && @error "Variable species are not yet implemented."
-        for n in 1:settings["nspecies"]
-            species[n] = Species(n)
+    global function createspecies()
+        for n in 1:settings["species"]
+            s = Species(n)
+            if settings["neutral"]
+                species[n] = s
+            else
+                max_age = convert(Int, round(vary(s.max_age)))
+                max_size = convert(Int, round(vary(s.max_size)))
+                growth_rate = convert(Int, round(vary(s.growth_rate)))
+                seed_production = convert(Int, round(vary(s.seed_production)))
+                dispersal_distance = convert(Int, round(vary(s.dispersal_distance)))
+                pathogen_resistance = convert(Int, round(vary(s.pathogen_resistance)))
+                species[n] = Species(n, max_age, max_size, growth_rate,
+                                     seed_production, dispersal_distance, pathogen_resistance)
+            end
         end
     end
 

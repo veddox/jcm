@@ -103,6 +103,7 @@ function disperse!(cons::Cons=forest)
             #TODO implement a proper dispersal kernel
             # Find a random location in a circle around the tree
             sx = tree.position.x + rand(-dx:dx)
+            #FIXME sqrt() was called with an argument of -32768.0?
             dy = convert(Int16, round(sqrt(abs(dx^2-(sx-tree.position.x)^2))))
             sy = tree.position.y + rand(-dy:dy)
             if sx >= -settings["worldsize"] && sx <= settings["worldsize"] &&
