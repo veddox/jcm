@@ -2,6 +2,8 @@
 
 *See* `project.md` *for more information.*
 
+![A simulated forest after 20 updates](illustration.jpg)
+
 ## Background
 
 The Janzen-Connell Effect explains how density-dependent mortality helps to
