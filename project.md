@@ -14,9 +14,9 @@ University of Würzburg
 
 - **v1.0-rc1** Basic forest model with dispersal, growth, and competition submodels.
 
-- **v1.0-rc2 [current]** Adds infection submodel.
+- **v1.0-rc2** Adds infection submodel.
 
-- **v1.0-rc3** Adds variable species.
+- **v1.0-rc3 [current]** Adds variable species.
 
 - **v1.0** Finished version, including the scripted experiment.
 

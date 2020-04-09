@@ -1,6 +1,6 @@
 # Janzen-Connell Model
 
-*See `project.md` for more information.*
+*See* `project.md` *for more information.*
 
 ## Background
 

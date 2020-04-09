@@ -97,5 +97,6 @@ plot_statistics = function(dfile=datafile, simname="jcm_run", toFile=TRUE) {
 
 ## --- TODO ---
 ##
+## * constant colours
 ## * GIF animations
 ##
