@@ -20,6 +20,26 @@ University of Würzburg
 
 - **v1.0** Finished version, including the scripted experiment.
 
+## TODO
+
+### Bugs
+
+- trees randomly die after world initialisation?
+
+- `forest.jl`, line 107: `sqrt()` was called with an argument of -32768.0?
+
+- constant colours for species and infection status in `analyse.R`
+
+### Features
+
+- UIDs for tree individuals
+
+- experiment script
+
+- output animation as GIF (with `gganimate`)
+
+- implement proper dispersal kernels for seeds and pathogens
+
 ## License
 
 Licensed under the terms of the MIT license:
