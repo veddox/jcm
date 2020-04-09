@@ -22,12 +22,14 @@ Insert a new tree object at the correct position in the forest list.
 (Sorted by ascending x values.)
 """
 function planttree!(tree::Tree,cons::Cons=forest)
+    #FIXME sometimes doesn't insert trees into the forest list
+    # (at least when called from initworld()
     while cons != nothing
         if !isa(cons.car, Tree)
             # If we have an empty cons cell, plant the tree here
             cons.car = tree
             global forestlen += 1
-            @debug "Planted tree @$(tree.position.x)/$(tree.position.y)"
+            @debug "Planted tree $(tree.uid) @$(tree.position.x)/$(tree.position.y)"
             return
         elseif tree.position.x < cons.car.position.x
             # If the next tree in the list is further east, insert a new cons cell
@@ -41,7 +43,7 @@ function planttree!(tree::Tree,cons::Cons=forest)
                 cons.cdr = newcons
             end
             global forestlen += 1
-            @debug "Planted tree @$(tree.position.x)/$(tree.position.y)"
+            @debug "Planted tree $(tree.uid) @$(tree.position.x)/$(tree.position.y)"
             return
         elseif cons.cdr == nothing
             # If we're at the end of the list, append a new cons cell
@@ -75,7 +77,7 @@ function killtree!(tree::Tree,cons::Cons=forest,reason::String="malice aforethou
             end
             #cleanup and decrease the tree count
             global forestlen -= 1
-            @debug "Killed tree @$(tree.position.x)/$(tree.position.y) because of $(reason)"
+            @debug "Killed tree $(tree.uid) @$(tree.position.x)/$(tree.position.y) because of $(reason)"
             tree = nothing
             return
         end
@@ -96,7 +98,7 @@ function disperse!(cons::Cons=forest)
             cons = cons.cdr
             continue
         end
-        @debug "Reproducing tree $i"
+        @debug "Reproducing tree $(tree.uid)"
         dx = tree.species.dispersal_distance
         # Each tree produces multiple seeds
         for s in 1:tree.species.seed_production
@@ -225,7 +227,7 @@ function spread_infection(cons::Cons)
             tree2.species.id == tree.species.id && #... it belongs to the same species
             prob > rand(Float16) #... it passes a random draw dependent on its resistance and distance
             tree2.infection = pathogen
-            @debug "Infected tree @$(tree2.position.x)/$(tree2.position.y)"
+            @debug "Infected tree $(tree.uid) @$(tree2.position.x)/$(tree2.position.y)"
         end
         next = next.cdr
     end
@@ -241,7 +243,7 @@ function spread_infection(cons::Cons)
             tree2.species.id == tree.species.id &&
             prob > rand(Float16)
             tree2.infection = pathogen
-            @debug "Infected tree @$(tree2.position.x)/$(tree2.position.y)"
+            @debug "Infected tree $(tree.uid) @$(tree2.position.x)/$(tree2.position.y)"
         end
         next = next.prev
     end

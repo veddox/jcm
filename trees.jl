@@ -28,7 +28,7 @@ end
 Pathogen(host) = Pathogen(host, false, 0.8, 50, 0.1)
 
 mutable struct Tree
-    uid::Int64 #should be large enough - hopefully...
+    uid::Int64 #XXX should be large enough - hopefully...
     species::Species
     age::Int16
     size::Int8
