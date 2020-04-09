@@ -98,7 +98,7 @@ function initworld()
         ypos = rand(-ws:ws)
         sp = getspecies(n)
         settings["pathogens"] ? infection = Pathogen(n) : infection = nothing
-        tree = Tree(sp, convert(Int16, round(sp.max_age/2)),
+        tree = Tree(nextid(), sp, convert(Int16, round(sp.max_age/2)),
                     sp.max_size, true, infection, (x=xpos, y=ypos))
         recordindividual(tree)
         planttree!(tree)
@@ -120,7 +120,7 @@ let updatelog::String = "", update::Int=0
     """
     global function recordindividual(tree::Tree)
         update < 0 && return # block unless we've reached a recording point
-        datastring = "$update,$(tree.species.id),$(tree.age),$(tree.size)"
+        datastring = "$update,$(tree.species.id),$(tree.uid),$(tree.age),$(tree.size)"
         datastring *= ",$(tree.mature ? "TRUE" : "FALSE"),$(tree.infection == nothing ? "FALSE" : "TRUE")"
         datastring *= ",$(tree.position.x),$(tree.position.y)"
         updatelog *= datastring * "\n"
@@ -147,7 +147,7 @@ let updatelog::String = "", update::Int=0
             time = Dates.format(Dates.now(), "dd/mm/yyy HH:MM")
             println(df, "# Janzen-Connell Model data file, created $time")
             println(df, "# settings = $settings")
-            println(df, "Update,Species,Age,Size,Mature,Infected,X,Y")
+            println(df, "update,species,uid,age,size,mature,infected,x,y")
         end
     end
 end

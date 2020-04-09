@@ -28,7 +28,7 @@ end
 Pathogen(host) = Pathogen(host, false, 0.8, 50, 0.1)
 
 mutable struct Tree
-    #TODO individual ID?
+    uid::Int64 #should be large enough - hopefully...
     species::Species
     age::Int16
     size::Int8
@@ -37,8 +37,19 @@ mutable struct Tree
     position::NamedTuple{(:x, :y), Tuple{Int16,Int16}}
 end
 
+# Store and administrate a running counter for tree UID values
+let idcounter::Int64 = 0
+    global function nextid()
+        idcounter += 1
+        return idcounter
+    end
+
+    global currentcounter() = idcounter
+    global resetcounter() = idcounter = 0
+end
+
 #Create a seed
-Tree(sp, xpos, ypos) = Tree(sp, 0, 1, false, nothing, (x=xpos, y=ypos))
+Tree(sp, xpos, ypos) = Tree(nextid(), sp, 0, 1, false, nothing, (x=xpos, y=ypos))
 
 """
 Vary a number i randomly  by up to +/- p% (utility function)
