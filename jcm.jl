@@ -105,7 +105,7 @@ function initworld()
     end
 end
 
-let updatelog::String = "", update=0
+let updatelog::String = "", update::Int=0
     """
     Set the internal update counter to the current update number.
     (Needed by run())
@@ -155,7 +155,7 @@ end
 """
 The main simulation function.
 """
-function run(updates::Int=-1, noinit::Bool=false)
+function run(noinit::Bool=false)
     merge!(settings, parsecommandline())
     initRNG()
     initrecording()
@@ -164,8 +164,7 @@ function run(updates::Int=-1, noinit::Bool=false)
         initworld()
     end
     recorddata()
-    updates < 0 && (updates = settings["runtime"])
-    for u in 1:updates
+    for u in 1:settings["runtime"]
         @info "UPDATE $u"
         record = u%settings["datafreq"] == 0
         record && setupdate(u)
@@ -178,7 +177,7 @@ function run(updates::Int=-1, noinit::Bool=false)
             infect!()
         end
         @info "Growth"
-        grow!()
+        grow!() # includes data recording
         record && recorddata()
     end
 end

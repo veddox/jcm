@@ -17,15 +17,15 @@ end
 Species(id) = Species(id, 150, 25, 2, 10, 200, 0)
 
 mutable struct Pathogen
+    host::UInt8
     infectious::Bool
     infection_rate::Float16
     infection_radius::Int16
     lethality::Float16
-    host::UInt8
 end
 
 #The default pathogen
-Pathogen(host) = Pathogen(false, 0.8, 50, 0.1, host)
+Pathogen(host) = Pathogen(host, false, 0.8, 50, 0.1)
 
 mutable struct Tree
     #TODO individual ID?
@@ -46,7 +46,11 @@ Vary a number i randomly  by up to +/- p% (utility function)
 function vary(i::Number; p::Int=25)
     i == 0 && return 0
     v = (p/100) * i
-    isa(i, AbstractFloat) ? s = i/100 : s = 1
+    s = i/100
+    if isinteger(i)
+        s = 1
+        v = round(typeof(i), v)
+    end
     n = i + rand(-v:s:v)
     return n
 end
@@ -63,12 +67,12 @@ let species::Vector{Species} = Vector{Species}(undef,settings["species"])
             if settings["neutral"]
                 species[n] = s
             else
-                max_age = convert(Int, round(vary(s.max_age)))
-                max_size = convert(Int, round(vary(s.max_size)))
-                growth_rate = convert(Int, round(vary(s.growth_rate)))
-                seed_production = convert(Int, round(vary(s.seed_production)))
-                dispersal_distance = convert(Int, round(vary(s.dispersal_distance)))
-                pathogen_resistance = convert(Int, round(vary(s.pathogen_resistance)))
+                max_age = vary(s.max_age)
+                max_size = vary(s.max_size)
+                growth_rate = vary(s.growth_rate)
+                seed_production = vary(s.seed_production)
+                dispersal_distance = vary(s.dispersal_distance)
+                pathogen_resistance = vary(s.pathogen_resistance)
                 species[n] = Species(n, max_age, max_size, growth_rate,
                                      seed_production, dispersal_distance, pathogen_resistance)
             end
