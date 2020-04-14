@@ -32,13 +32,11 @@ University of Würzburg
 
 ### Features
 
-- UIDs for tree individuals
-
 - experiment script
 
-- output animation as GIF (with `gganimate`)
+- output animation as GIF (with `gganimate`) (?)
 
-- implement proper dispersal kernels for seeds and pathogens
+- implement proper dispersal kernels for seeds and pathogens (?)
 
 ## License
 
