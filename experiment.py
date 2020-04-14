@@ -26,7 +26,7 @@ def run_model(scenario="null", n=10):
         df = scenario+"_"+str(i)
         cmd = "./jcm.jl -t "+str(runtime)+" -d "+str(datafreq)+" -f "+df+sc
         os.system(cmd)
-
+        
 if __name__=='__main__':
     scen, rep = "null", 10
     if len(sys.argv) >= 2:

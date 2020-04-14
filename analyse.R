@@ -7,7 +7,7 @@
 
 library(ggplot2)
 library(ggforce)
-library(gganimate)
+#library(gganimate)
 
 datafile = "jcm_data.csv"
 
@@ -42,6 +42,7 @@ plot_series = function(dfile=datafile, simname="jcm_run") {
 
 ## Create an animated GIF of the simulation map over time
 ##XXX Do I really need this?
+##XXX currently obsolete
 render_gif = function(dfile=datafile) {
     d = read.csv(dfile, comment.char="#")
     ##TODO doesn't seem to work yet? Or does it just take forever to render?
@@ -91,6 +92,21 @@ plot_statistics = function(dfile=datafile, simname="jcm_run", toFile=TRUE) {
     lines(updates, equitability, col="blue")
     #TODO add legend
     if (toFile) dev.off()
+}
+
+analyse_runs = function(runfiles) {
+    for (r in runfiles) {
+        simname = r #XXX currently, experiment.py doesn't append ".csv"
+        print(paste("Analysing run", simname))
+        plot_statistics(r, simname)
+        plot_series(r, simname)
+    }
+}
+
+if (any(commandArgs() == "analyse")) {
+    ca = commandArgs()
+    runs = ca[(which(ca=="analyse")+1):length(ca)]
+    analyse_runs(runs)
 }
 
 ## --- TODO ---
