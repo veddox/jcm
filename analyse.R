@@ -103,11 +103,9 @@ analyse_runs = function(runfiles) {
     }
 }
 
-if (any(commandArgs() == "analyse")) {
-    ca = commandArgs()
-    runs = ca[(which(ca=="analyse")+1):length(ca)]
-    analyse_runs(runs)
-}
+## analyse all csv files passed via commandline arguments
+csv = commandArgs()[grepl(".csv", commandArgs())]
+if (length(csv) > 0) analyse_runs(csv)
 
 ## --- TODO ---
 ##
