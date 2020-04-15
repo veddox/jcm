@@ -10,7 +10,7 @@ import os, sys
 runtime = 250 #default: 500
 datafreq = 10 #default: 10
 
-def run_model(scenario="null", n=10):
+def run_model(scenario="null", n=10, logging=True):
     """
     Run the model with n repetitions in the given scenario:
     "null" - no pathogens, all species have identical trait values
@@ -23,8 +23,10 @@ def run_model(scenario="null", n=10):
     else: raise Exception("Bad scenario "+scenario)
     for i in range(0,n):
         print("Running replicate "+str(i)+" of the "+scenario+" scenario.")
-        df = scenario+"_"+str(i)
+        df = scenario+"_"+str(i)+".csv"
+        if logging: log = df[:-4]+".log"
         cmd = "./jcm.jl -t "+str(runtime)+" -d "+str(datafreq)+" -f "+df+sc
+        if logging: cmd = cmd+" | tee "+log
         os.system(cmd)
         
 if __name__=='__main__':

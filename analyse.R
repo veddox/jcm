@@ -96,7 +96,7 @@ plot_statistics = function(dfile=datafile, simname="jcm_run", toFile=TRUE) {
 
 analyse_runs = function(runfiles) {
     for (r in runfiles) {
-        simname = r #XXX currently, experiment.py doesn't append ".csv"
+        simname = gsub(".csv", "", r)
         print(paste("Analysing run", simname))
         plot_statistics(r, simname)
         plot_series(r, simname)
