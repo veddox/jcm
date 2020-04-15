@@ -10,16 +10,20 @@ library(ggforce)
 
 datafile = "jcm_data.csv"
 
+spec_colours = c("cornflowerblue", "darkorange1", "mediumvioletred", "gold",
+                 "darkblue", "darkmagenta", "tan2", "darkolivegreen4",
+                 "chartreuse", "forestgreen", "yellowgreen", "firebrick4",
+                 "mediumorchid1", "wheat4", "cadetblue1", "seagreen1")
+
 ## Plot a map of the simulation arena for this update
 plot_map = function(update, data, mapname="map") {
-    ggplot(data=data[which(data$update==update),]) +
-        ##TODO keep fill colour constant across time
-        geom_circle(mapping=aes(x0=x, y0=y, r=(size/2), fill=as.factor(species),
-                    color=infected), show.legend=FALSE) +
+    d = data[which(data$update==update),]
+    ggplot(data=d) +
+        geom_circle(show.legend=FALSE,
+                    mapping=aes(x0=x, y0=y, r=(size/2), colour=infected,
+                                fill=spec_colours[species])) +
         coord_fixed(ratio=1, xlim=c(-500,500), ylim=c(-500,500)) +
-        scale_fill_manual(values=rainbow(max(data$species))) +
-        #FIXME when there are no pathogens, all circles are red
-        scale_color_manual(values=c("red", "black")) +
+        scale_color_manual(values=c("TRUE"="red", "FALSE"="black")) +
         scale_size_continuous(range=c(min(data$size)/5,max(data$size)/5)) +
         theme(panel.background=element_rect(colour="black",size=1,fill="lightgray"),
               panel.grid=element_blank(),
@@ -32,7 +36,8 @@ plot_map = function(update, data, mapname="map") {
 }
 
 ## Plot a series of maps for this simulation run
-plot_series = function(dfile=datafile, simname="jcm_run") {
+plot_series = function(dfile=datafile) {
+    simname = gsub(".csv", "", dfile)
     d = read.csv(dfile, comment.char="#")
     for (u in unique(d$update)) {
         plot_map(u, d, simname)
@@ -50,7 +55,8 @@ shannon = function(udata) {
 }
 
 ## Plot population and diversity development over time
-plot_statistics = function(dfile=datafile, simname="jcm_run", toFile=TRUE) {
+plot_statistics = function(dfile=datafile, toFile=TRUE) {
+    simname = gsub(".csv", "", dfile)
     d = read.csv(dfile, comment.char="#")
     if (toFile) jpeg(paste0(simname,"_stats.jpg"), height=720, width=720)
     updates = unique(d$update)
@@ -70,18 +76,12 @@ plot_statistics = function(dfile=datafile, simname="jcm_run", toFile=TRUE) {
 
 analyse_runs = function(runfiles) {
     for (r in runfiles) {
-        simname = gsub(".csv", "", r)
-        print(paste("Analysing run", simname))
-        plot_statistics(r, simname)
-        plot_series(r, simname)
+        print(paste("Analysing", r))
+        plot_statistics(r)
+        plot_series(r)
     }
 }
 
 ## analyse all csv files passed via commandline arguments
 csv = commandArgs()[grepl(".csv", commandArgs())]
 if (length(csv) > 0) analyse_runs(csv)
-
-## --- TODO ---
-##
-## * constant colours for species and infection status
-##

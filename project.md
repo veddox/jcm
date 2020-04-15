@@ -28,8 +28,6 @@ University of Würzburg
 
 - `forest.jl`, line 107: `sqrt()` was called with an argument of -32768.0?
 
-- constant colours for species and infection status in `analyse.R`
-
 ### Features
 
 - experiment script
