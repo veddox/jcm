@@ -105,7 +105,8 @@ JCM 1.0.0-rc3, (c) 2020 Daniel Vedder
 Ecosystem Modelling Group, University of Würzburg
 ```
 
-The visualisation script `analyse.R` requires R with the packages `ggplot2`, `ggforce`, and `gganimate`.
+The visualisation script `analyse.R` requires R with the packages `ggplot2`
+and `ggforce`.
 
 ## Source files
 

@@ -7,7 +7,6 @@
 
 library(ggplot2)
 library(ggforce)
-#library(gganimate)
 
 datafile = "jcm_data.csv"
 
@@ -38,31 +37,6 @@ plot_series = function(dfile=datafile, simname="jcm_run") {
     for (u in unique(d$update)) {
         plot_map(u, d, simname)
     }
-}
-
-## Create an animated GIF of the simulation map over time
-##XXX Do I really need this?
-##XXX currently obsolete
-render_gif = function(dfile=datafile) {
-    d = read.csv(dfile, comment.char="#")
-    ##TODO doesn't seem to work yet? Or does it just take forever to render?
-    gp = ggplot(data=d) +
-        geom_circle(mapping=aes(x0=x, y0=y, r=size, fill=as.factor(species)),
-                    show.legend=FALSE) +
-        coord_fixed(ratio=1, xlim=c(-500,500), ylim=c(-500,500)) +
-        scale_colour_manual(values=rainbow(max(d$species))) +
-        scale_size_continuous(range=c(min(d$size)/5,max(d$size)/5)) +
-        theme(panel.background=element_rect(colour="black",size=1,fill="lightgray"),
-              panel.grid=element_blank(),
-              axis.title=element_blank(),
-              axis.ticks=element_blank(),
-              axis.text=element_blank(),
-              plot.margin=unit(c(0.5,0.5,0.4,0.4), "cm")) +
-        labs(title="Update: {update}") +
-        transition_time(Update) +
-        view_static() +
-        ease_aes("linear")
-    animate(gp, renderer=gifski_renderer("run.gif"))
 }
 
 ## Calculate Shannon diversity and equitability for one update
@@ -109,6 +83,5 @@ if (length(csv) > 0) analyse_runs(csv)
 
 ## --- TODO ---
 ##
-## * constant colours
-## * GIF animations
+## * constant colours for species and infection status
 ##

@@ -54,7 +54,7 @@ Tree(sp, xpos, ypos) = Tree(nextid(), sp, 0, 1, false, nothing, (x=xpos, y=ypos)
 """
 Vary a number i randomly  by up to +/- p% (utility function)
 """
-function vary(i::Number; p::Int=25)
+function vary(i::Number; p::Int=50)
     i == 0 && return 0
     v = (p/100) * i
     s = i/100
