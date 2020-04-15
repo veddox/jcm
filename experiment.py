@@ -7,8 +7,8 @@
 
 import os, sys
 
-runtime = 250 #default: 500
-datafreq = 10 #default: 10
+runtime = 400 #default: 500
+datafreq = 20 #default: 10
 
 def run_model(scenario="null", n=10, logging=True):
     """
@@ -34,5 +34,5 @@ if __name__=='__main__':
     if len(sys.argv) >= 2:
         scen = sys.argv[1]
     if len(sys.argv) >= 3:
-        rep = sys.argv[2]
+        rep = int(sys.argv[2])
     run_model(scen, rep)
