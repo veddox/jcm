@@ -226,7 +226,7 @@ function spread_infection(cons::Cons)
             tree2.infection == nothing && #... it isn't infected anyway
             tree2.species.id == tree.species.id && #... it belongs to the same species
             prob > rand(Float16) #... it passes a random draw dependent on its resistance and distance
-            tree2.infection = pathogen
+            tree2.infection = Pathogen(pathogen.host)
             @debug "Infected tree $(tree.uid) @$(tree2.position.x)/$(tree2.position.y)"
         end
         next = next.cdr
@@ -242,7 +242,7 @@ function spread_infection(cons::Cons)
             tree2.infection == nothing &&
             tree2.species.id == tree.species.id &&
             prob > rand(Float16)
-            tree2.infection = pathogen
+            tree2.infection = Pathogen(pathogen.host)
             @debug "Infected tree $(tree.uid) @$(tree2.position.x)/$(tree2.position.y)"
         end
         next = next.prev

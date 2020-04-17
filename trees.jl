@@ -25,7 +25,7 @@ mutable struct Pathogen
 end
 
 #The default pathogen
-Pathogen(host) = Pathogen(host, false, 0.8, 50, 0.1)
+Pathogen(host) = Pathogen(host, false, 0.8, settings["transmission"], 0.05)
 
 mutable struct Tree
     uid::Int64 #XXX should be large enough - hopefully...

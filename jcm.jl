@@ -24,6 +24,7 @@ const settings = Dict("species" => 16,              # The number of species that
                       "datafile" => "jcm_data.csv", # The name of the recorded data file
                       "datafreq" => 10,             # How long between data recordings?
                       "pathogens" => false,         # Include pathogens in the simulation?
+                      "transmission" => 50,         # Pathogen infection radius
                       "neutral" => false,           # All species have identical trait values?
                       "verbosity" => "Info",        # The log level (Debug, Info, Warn, Error)
                       "seed" => 0)                  # The seed for the RNG (0 -> random)
@@ -62,6 +63,10 @@ function parsecommandline()
         "--pathogens", "-p"
         help = "run a simulation with pathogens"
         action = :store_true
+        "--transmission", "-i"
+        help = "maximum pathogen infection radius"
+        arg_type = Int
+        default = settings["transmission"]
         "--neutral", "-n"
         help = "all species have identical trait values"
         action = :store_true
