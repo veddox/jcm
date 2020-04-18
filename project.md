@@ -30,11 +30,7 @@ University of Würzburg
 
 ### Features
 
-- experiment script
-
-- output animation as GIF (with `gganimate`) (?)
-
-- implement proper dispersal kernels for seeds and pathogens (?)
+- implement proper (or at least, linear) dispersal kernels for seeds
 
 ## License
 
