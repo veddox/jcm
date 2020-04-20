@@ -1,6 +1,7 @@
 # Janzen-Connell Model
 
-*See* `project.md` *for more information.*
+*See* [https://github.com/veddox/jcm/blob/master/project.md](`project.md`) 
+*for more information.*
 
 ![A simulated forest after 20 updates](illustration.jpg)
 
@@ -108,8 +109,8 @@ JCM 1.0.0-rc3, (c) 2020 Daniel Vedder
 Ecosystem Modelling Group, University of Würzburg
 ```
 
-The visualisation script `analyse.R` requires R with the packages `ggplot2`
-and `ggforce`.
+The visualisation script `analyse.R` requires R with the packages `ggplot2`, 
+`ggforce`, and `reshape2`.
 
 ## Source files
 

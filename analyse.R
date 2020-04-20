@@ -7,6 +7,7 @@
 
 library(ggplot2)
 library(ggforce)
+library(reshape2)
 
 datafile = "jcm_data.csv"
 
@@ -74,7 +75,7 @@ plot_statistics = function(dfile=datafile, toFile=TRUE) {
     if (toFile) dev.off()
 }
 
-analyse_runs = function(runfiles) {
+plot_runs = function(runfiles) {
     for (r in runfiles) {
         print(paste("Analysing", r))
         plot_statistics(r)
@@ -82,6 +83,82 @@ analyse_runs = function(runfiles) {
     }
 }
 
+## Calculate core measures for each scenario:
+## - species range (hectare)
+## - population density (ind./ha)
+## - species proportion (% of community size)
+analyse_experiment = function(runfiles) {
+    expframe = c()
+    for (r in runfiles) {
+        sce = strsplit(r, "_")[[1]][1] #scenario
+        rep = gsub(".csv", "", strsplit(r, "_")[[1]][2]) #replicate
+        dat = read.csv(r, comment.char="#") #complete rundata
+        end = dat[which(dat$update==max(dat$update)),] #last update
+        com = dim(end)[1] #community size
+        for (s in 1:16) {
+            spe = end[which(end$species==s),]
+            pop = dim(spe)[1] #population size
+            if (pop == 0) {
+                rng = 0 #species range
+                den = 0 #population density
+                div = 0 #species proportion
+            }
+            else {
+                rng = (max(spe$x)-min(spe$x))*(max(spe$y)-min(spe$y))/10000
+                den = pop/rng #population density
+                div = (pop/com)*100 #species proportion
+            }
+            expframe = rbind(expframe, c(sce, rep, s, rng, den, div))
+        }
+    }
+    colnames(expframe) = c("scenario", "replicate", "species", "range",
+                           "density", "proportion")
+    return(expframe)
+}
+
+## Violin plots showing core measures for each scenario
+plot_experiment = function(data) {
+    ## reshape the data for ggplot2
+    d = melt(data, id.vars=c("scenario", "replicate", "species"),
+             variable.name="measure")
+    d$value = as.numeric(d$value)
+    ## range plot
+    ggplot(data=d[which(d$measure=="range"),], aes(x=scenario, y=value)) +
+        geom_violin(aes(fill=scenario)) +
+        scale_x_discrete(labels=c("High transmission", "Low transmission",
+                                  "No pathogen", "Neutral")) +
+        guides(fill="none") +
+        labs(x="Scenario", y="Population range (ha)", tag="A") +
+        theme_classic()
+    ggsave("range.pdf", width=6, height=3)
+    ## density plot
+    ggplot(data=d[which(d$measure=="density"),], aes(x=scenario, y=value)) +
+        geom_violin(aes(fill=scenario)) +
+        scale_x_discrete(labels=c("High transmission", "Low transmission",
+                                  "No pathogen", "Neutral")) +
+        guides(fill="none") +
+        labs(x="Scenario", y="Population density (ind./ha)", tag="B") +
+        theme_classic()
+    ggsave("density.pdf", width=6, height=3)
+    ## proportion plot
+    ggplot(data=d[which(d$measure=="proportion"),], aes(x=scenario, y=value)) +
+        geom_violin(aes(fill=scenario)) +
+        scale_x_discrete(labels=c("High transmission", "Low transmission",
+                                  "No pathogen", "Neutral")) +
+        guides(fill="none") +
+        labs(x="Scenario", y="Population size (% community size)", tag="C") +
+        theme_classic()
+    ggsave("proportion.pdf", width=6, height=3)
+}
+
 ## analyse all csv files passed via commandline arguments
+## if "all" is passed as well, do a whole-experiment analysis instead
 csv = commandArgs()[grepl(".csv", commandArgs())]
-if (length(csv) > 0) analyse_runs(csv)
+if (length(csv) > 0) {
+    if (any(grepl("all", commandArgs()))) {
+        plot_experiment(analyse_experiment(csv))
+    }
+    else {
+        plot_runs(csv)
+    }
+}
