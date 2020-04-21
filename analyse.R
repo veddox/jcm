@@ -117,16 +117,18 @@ analyse_experiment = function(runfiles) {
 }
 
 ## Violin plots showing core measures for each scenario
-plot_experiment = function(data) {
+plot_experiment = function(expdata) {
     ## reshape the data for ggplot2
-    d = melt(data, id.vars=c("scenario", "replicate", "species"),
-             variable.name="measure")
+    d = melt(as.data.frame(expdata), variable.name="measure",
+             id.vars=c("scenario", "replicate", "species"))
     d$value = as.numeric(d$value)
     ## range plot
     ggplot(data=d[which(d$measure=="range"),], aes(x=scenario, y=value)) +
         geom_violin(aes(fill=scenario)) +
-        scale_x_discrete(labels=c("High transmission", "Low transmission",
-                                  "No pathogen", "Neutral")) +
+        scale_x_discrete(limits=c("null", "nopat", "lopat", "hipat"),
+                         labels=c("(1) Neutral", "(2) No pathogen",
+                                  "(3) Low transmission",
+                                  "(4) High transmission")) +
         guides(fill="none") +
         labs(x="Scenario", y="Population range (ha)", tag="A") +
         theme_classic()
@@ -134,8 +136,10 @@ plot_experiment = function(data) {
     ## density plot
     ggplot(data=d[which(d$measure=="density"),], aes(x=scenario, y=value)) +
         geom_violin(aes(fill=scenario)) +
-        scale_x_discrete(labels=c("High transmission", "Low transmission",
-                                  "No pathogen", "Neutral")) +
+        scale_x_discrete(limits=c("null", "nopat", "lopat", "hipat"),
+                         labels=c("(1) Neutral", "(2) No pathogen",
+                                  "(3) Low transmission",
+                                  "(4) High transmission")) +
         guides(fill="none") +
         labs(x="Scenario", y="Population density (ind./ha)", tag="B") +
         theme_classic()
@@ -143,12 +147,47 @@ plot_experiment = function(data) {
     ## proportion plot
     ggplot(data=d[which(d$measure=="proportion"),], aes(x=scenario, y=value)) +
         geom_violin(aes(fill=scenario)) +
-        scale_x_discrete(labels=c("High transmission", "Low transmission",
-                                  "No pathogen", "Neutral")) +
+        scale_x_discrete(limits=c("null", "nopat", "lopat", "hipat"),
+                         labels=c("(1) Neutral", "(2) No pathogen",
+                                  "(3) Low transmission",
+                                  "(4) High transmission")) +
         guides(fill="none") +
         labs(x="Scenario", y="Population size (% community size)", tag="C") +
         theme_classic()
     ggsave("proportion.pdf", width=6, height=3)
+}
+
+## A boxplot showing how many species survived in each scenario
+plot_survival = function(expdata) {
+    ## Find the number of survivors in a given run
+    n_survivors = function(scenario, run) {
+        dim(expdata[intersect(which(expdata[,"replicate"]==as.character(run)),
+                              intersect(which(expdata[,"scenario"]==scenario),
+                                        which(expdata[,"proportion"] > 0))),])[1]
+    }
+    sdata = c()
+    for (s in c("null", "nopat", "lopat", "hipat")) {
+        for (i in 0:19) {
+            surv = n_survivors(s, i)
+            if (is.null(surv)) surv = 0
+            sdata = rbind(sdata, c(s, surv))
+        }
+    }
+    colnames(sdata) = c("scenario", "survivors")
+    sdata = as.data.frame(sdata)
+    sdata$survivors = as.numeric(as.character(sdata$survivors))
+    ## Plot the processed data
+    ggplot(data=sdata, aes(x=scenario, y=survivors)) +
+        ## I don't need the distribution shape here
+        geom_violin(aes(fill=scenario)) +
+        scale_x_discrete(limits=c("null", "nopat", "lopat", "hipat"),
+                         labels=c("(1) Neutral", "(2) No pathogen",
+                                  "(3) Low transmission",
+                                  "(4) High transmission")) +
+        guides(fill="none") +
+        labs(x="Scenario", y="Number of surviving species") +
+        theme_classic()
+    ggsave("survival.pdf", width=6, height=4)
 }
 
 ## analyse all csv files passed via commandline arguments
@@ -156,7 +195,9 @@ plot_experiment = function(data) {
 csv = commandArgs()[grepl(".csv", commandArgs())]
 if (length(csv) > 0) {
     if (any(grepl("all", commandArgs()))) {
-        plot_experiment(analyse_experiment(csv))
+        expdata = analyse_experiment(csv)
+        plot_experiment(expdata)
+        plot_survival(expdata)
     }
     else {
         plot_runs(csv)

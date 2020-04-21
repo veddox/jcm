@@ -1,7 +1,6 @@
 # Janzen-Connell Model
 
-*See* [https://github.com/veddox/jcm/blob/master/project.md](`project.md`) 
-*for more information.*
+*See* `project.md` *for more information.*
 
 ![A simulated forest after 20 updates](illustration.jpg)
 
