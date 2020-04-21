@@ -27,8 +27,8 @@ def run_model(scenario="null", n=10, b=0):
     else: raise Exception("Bad scenario "+scenario)
     # Configure transmission (infection radius)
     tr = ""
-    if scenario == "hipat": tr = "-i 200"
-    elif scenario == "lopat": tr = "-i 40"
+    if scenario == "hipat": tr = " -i 200"
+    elif scenario == "lopat": tr = " -i 40"
     # Construct and run the simulation commands
     for i in range(b,b+n):
         print("Running replicate "+str(i)+" of the "+scenario+" scenario.")

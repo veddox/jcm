@@ -104,7 +104,7 @@ optional arguments:
   --version             show version information and exit
   -h, --help            show this help message and exit
 
-JCM 1.0.0-rc3, (c) 2020 Daniel Vedder
+JCM 1.0, (c) 2020 Daniel Vedder
 Ecosystem Modelling Group, University of Würzburg
 ```
 

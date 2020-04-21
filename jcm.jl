@@ -11,7 +11,7 @@
 
 module jcm
 
-const jcm_version = v"1.0-rc3"
+const jcm_version = v"1.0"
 
 using Dates,
     ArgParse,

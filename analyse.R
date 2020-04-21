@@ -185,7 +185,7 @@ plot_survival = function(expdata) {
                                   "(3) Low transmission",
                                   "(4) High transmission")) +
         guides(fill="none") +
-        labs(x="Scenario", y="Number of surviving species") +
+        labs(x="Scenario", y="Species richness") +
         theme_classic()
     ggsave("survival.pdf", width=6, height=4)
 }
