@@ -149,6 +149,6 @@ Tropical Forests. The American Naturalist, 104(940), 501–528.
 https://doi.org/10.1086/282687
 
 ---
-&copy; 2020 Daniel Vedder
+&copy; 2020-2024 Daniel Vedder
 
 *Licensed under the terms of the MIT license.*

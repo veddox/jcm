@@ -10,21 +10,22 @@
 ####     Licensed under the terms of the MIT license.
 ####
 
-module jcmagents
+module jcm
 
 const jcm_version = v"2.0"
 
 using Agents,
+    CairoMakie,
     Logging,
     Random
 
 const settings = Dict("species" => 16,              # The number of species that will be created
-                      "worldsize" => 500,           # The extent from the center of the square world arena in meters
+                      "worldsize" => 1000,          # The length and breadth of the world in m
                       "runtime" => 1000,            # The number of updates the simulation will run
                       "datafile" => "jcm_data.csv", # The name of the recorded data file
                       "datafreq" => 50,             # How long between data recordings?
                       "pathogens" => false,         # Include pathogens in the simulation?
-                      "transmission" => 50,         # Pathogen infection radius
+                      "transmission" => 40,         # Pathogen infection radius
                       "neutral" => false,           # All species have identical trait values?
                       "verbosity" => Logging.Info,  # The log level (Debug, Info, Warn, Error)
                       "seed" => 0)                  # The seed for the RNG (0 -> random)
@@ -32,25 +33,52 @@ const settings = Dict("species" => 16,              # The number of species that
 include("ecology.jl")
 
 """
-Initialise the random number generator and logger.
+    initworld()
+
+Initialise the model world, doing necessary housekeeping and adding one tree of each species
+to the landscape.
 """
-function inithelpers()
+function initworld()
+    # initialise the RNG and the logger
     if settings["seed"] == 0
-        settings["seed"] = abs(rand(Random.RandomDevice(), Int32))
+        settings["seed"] = abs(rand(Random.RandomDevice(), Int))
     end
-    Random.seed!(settings["seed"])
+    rng = Random.Xoshiro(settings["seed"])
     global_logger(ConsoleLogger(stdout, settings["verbosity"]))
+    # create the space and model object
+    space = ContinuousSpace((settings["worldsize"], settings["worldsize"]))
+    model = StandardABM(Tree, space; agent_step!, rng)
+    # create all species and add one tree from each species to the model
+    for s in 1:settings["species"]
+        sp = createspecies(s)
+        tree = Tree(sp, Int(round(sp.max_age/2)), sp.max_size, true, settings["pathogens"])
+        #recordindividual(tree) #TODO
+        add_agent!(tree, model)
+    end
+    return model
 end
 
+#TODO data collection, output & visualisation
 
-#TODO create model object
-#TODO initialise model world
+"""
+    runmodel()
 
-#TODO data collection
-#TODO data visualisation
-
+Set up, run, and visualise the model.
+"""
+function runmodel()
+    model = initworld()
+    @time run!(model, settings["runtime"])
+    abmvideo(
+        "janzen-connell.mp4", model;
+        agent_marker = a -> a.infected ? :circle : :triangle,
+        agent_color = a -> Makie.to_colormap(:tab20)[a.species.id],
+        framerate = 20, frames = 150,
+        title = "Janzen-Connell Model"
+    )
+end
+    
 if !isinteractive()
-    @time run() #TODO
+    runmodel()
 end
 
 end

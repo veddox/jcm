@@ -10,9 +10,9 @@ A struct storing the variables for a species-specific pathogen.
 """
 @kwdef struct Pathogen
     infectious::Bool = false
-    infection_rate::Float16 = 0.8
-    infection_radius::Int16 = 0
-    lethality::Float16 = 0.05
+    infection_rate::Float64 = 0.8
+    infection_radius::Int = 0
+    lethality::Float64 = 0.05
 end
 
 """
@@ -21,13 +21,13 @@ end
 A struct storing all species-specific variables.
 """
 @kwdef struct Species
-    id::UInt8 # < 256
-    max_age::Int16 = 150 # < 32768
-    max_size::Int8 = 25 # < 128m
-    growth_rate::Int8 = 2
-    seed_production::Int16 = 10
-    dispersal_distance::Int16 = 200
-    pathogen_resistance::Float16 = 0
+    id::Int
+    max_age::Int = 150
+    max_size::Int = 25
+    growth_rate::Int = 2
+    seed_production::Int = 10
+    dispersal_distance::Int = 200
+    pathogen_resistance::Float64 = 0
     pathogen::Pathogen = Pathogen()
 end
 
@@ -38,8 +38,8 @@ The core agent type of the model, a single tropical tree.
 """
 @agent struct Tree(ContinuousAgent{2,Float64})
     species::Species
-    age::Int16
-    size::Int8
+    age::Int
+    size::Int
     mature::Bool
     infected::Bool
 end
@@ -47,9 +47,94 @@ end
 "Initialise a tree based on its species (to be used during model initialisation)."
 Tree(s::Species) = Tree(s, Int(round(s.max_age/2)), s.max_size, true, settings["pathogens"])
 
-function updatetree!(tree:Tree, model::AgentBasedModel)
-    #TODO dispersal
-    #TODO competition
-    #TODO infection
-    #TODO growth
+"""
+    vary(i, p)
+
+Vary a number i randomly  by up to +/- p% (helper function for createspecies()).
+"""
+function vary(i::Number; p::Int=50)
+    i == 0 && return 0
+    v = (p/100) * i
+    s = i/100
+    if isinteger(i)
+        s = 1
+        v = round(typeof(i), v)
+    end
+    n = i + rand(-v:s:v)
+    return n
+end
+
+"""
+    createspecies(id)
+
+Create a new species. If settings["neutral"] is true, use the standard trait values, otherwise
+vary them to create unique traits.
+"""
+function createspecies(id::Int)
+    if settings["pathogens"]
+        p = Pathogen(infection_radius=settings["transmission"])
+    else
+        p = Pathogen()
+    end
+    s = Species(id=id, pathogen=p)
+    if settings["neutral"]
+        return s
+    else
+        max_age = vary(s.max_age)
+        max_size = vary(s.max_size)
+        growth_rate = vary(s.growth_rate)
+        seed_production = vary(s.seed_production)
+        dispersal_distance = vary(s.dispersal_distance)
+        pathogen_resistance = vary(s.pathogen_resistance)
+        return Species(id, max_age, max_size, growth_rate, seed_production,
+                       dispersal_distance, pathogen_resistance, p)
+    end
+end
+
+"""
+    agent_step!(tree, model)
+
+Carry out each of the four ecological processes (dispersal, competition, infection, growth)
+for one tree in the model. This is the stepping function for Agents.jl.
+"""
+function agent_step!(tree::Tree, model::AgentBasedModel)
+    # reproduction and dispersal
+    if tree.mature
+        for s in 1:tree.species.seed_production
+            p = random_nearby_position(tree.pos, model, r=tree.species.dispersal_distance)
+            seed = Tree(tree.species, 0, 0, false, false)
+            add_agent!(seed, p, model)
+        end
+    end
+    # competition for space
+    for neighbour in nearby_agents(tree, model, r=tree.size)
+        # check for overlapping trees and kill the smaller one
+        if neighbour.size > tree.size
+            @debug "Tree $(tree.id) died because of competition."
+            remove_agent!(tree, model)
+        else
+            @debug "Tree $(tree.id) died because of competition."
+            remove_agent!(neighbour, model)
+        end
+    end
+    # infection dynamics
+    if tree.infected
+        pathogen = tree.species.pathogen
+        # pathogens have a one-update incubation period
+        pathogen.infectious ? spreadinfection(tree, model) : pathogen.infectious = true
+        if pathogen.lethality > rand(Float64)
+            @debug "Tree $(tree.id) died because of disease."
+            remove_agent!(tree, model)
+        end
+    end
+    # growth and aging
+    if !tree.mature
+        tree.size += tree.species.growth_rate
+        tree.size >= tree.species.max_size && (tree.mature = true)
+    elseif tree.age >= tree.species.max_age
+        @debug "Tree $(tree.id) died because of old age."
+        remove_agent!(tree, model)
+    end
+    tree.age += 1
+    #recordindividual(tree) #TODO
 end
