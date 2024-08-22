@@ -20,6 +20,10 @@ diversity levels.
 The JCM is a simple forest community model, simulating 16 tree species in a 1 km²
 patch. It includes basic life-history processes and an epidemiological submodel.
 
+*Note: there are two implementations of this model. The first uses plain Julia code
+and is located in the `original` directory. The second uses the Agents.jl library
+and is in the `agentsjl` directory. This file describes the original version.*
+
 ### Entities
 
 - **Species:** A class storing the life-history traits of one tree species.
@@ -65,7 +69,7 @@ size. Individuals that reach their species' maximum age die.
 
 ## Usage
 
-Running the model requires [Julia 1.3](https://julialang.org/downloads/) with the
+Running the model requires [Julia 1.3+](https://julialang.org/downloads/) with the
 [ArgParse](https://argparsejl.readthedocs.io/en/latest/argparse.html#) package.
 
 ```

@@ -18,7 +18,9 @@ University of Würzburg
 
 - **v1.0-rc3** Adds variable species.
 
-- **v1.0 [current]** Finished version, including the scripted experiment.
+- **v1.0** Finished version, including the scripted experiment.
+
+- **v2.0** A rewritten version of the model using the Agents.jl framework
 
 ## TODO
 
