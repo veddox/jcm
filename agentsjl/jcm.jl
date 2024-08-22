@@ -51,9 +51,8 @@ function initworld()
     # create all species and add one tree from each species to the model
     for s in 1:settings["species"]
         sp = createspecies(s)
-        tree = Tree(sp, Int(round(sp.max_age/2)), sp.max_size, true, settings["pathogens"])
-        #recordindividual(tree) #TODO
-        add_agent!(tree, model)
+        add_agent!(model, (0,0), sp, Int(round(sp.max_age/2)), sp.max_size, true,
+                   settings["pathogens"])
     end
     return model
 end
@@ -70,7 +69,7 @@ function runmodel()
     @time run!(model, settings["runtime"])
     abmvideo(
         "janzen-connell.mp4", model;
-        agent_marker = a -> a.infected ? :circle : :triangle,
+        agent_marker = a -> a.infected ? :circle : :diamond,
         agent_color = a -> Makie.to_colormap(:tab20)[a.species.id],
         framerate = 20, frames = 150,
         title = "Janzen-Connell Model"

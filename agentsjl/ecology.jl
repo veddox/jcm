@@ -44,9 +44,6 @@ The core agent type of the model, a single tropical tree.
     infected::Bool
 end
 
-"Initialise a tree based on its species (to be used during model initialisation)."
-Tree(s::Species) = Tree(s, Int(round(s.max_age/2)), s.max_size, true, settings["pathogens"])
-
 """
     vary(i, p)
 
@@ -100,18 +97,25 @@ for one tree in the model. This is the stepping function for Agents.jl.
 function agent_step!(tree::Tree, model::AgentBasedModel)
     # reproduction and dispersal
     if tree.mature
+        dx = tree.species.dispersal_distance
         for s in 1:tree.species.seed_production
-            p = random_nearby_position(tree.pos, model, r=tree.species.dispersal_distance)
-            seed = Tree(tree.species, 0, 0, false, false)
-            add_agent!(seed, p, model)
+            sx = tree.pos.x + rand(-dx:dx)
+            dy = Int(round(sqrt(abs(dx^2-(sx-tree.pos.x)^2))))
+            sy = tree.pos.y + rand(-dy:dy)
+            if sx >= -settings["worldsize"] && sx <= settings["worldsize"] &&
+                sy >= -settings["worldsize"] && sy <= settings["worldsize"]
+                add_agent!((sx, sy), model, (0,0), tree.species, 0, 0, false, false)
+            end
         end
     end
     # competition for space
-    for neighbour in nearby_agents(tree, model, r=tree.size)
+    for neighbour in nearby_agents(tree, model, tree.size)
         # check for overlapping trees and kill the smaller one
+        !(hasid(model, neighbour) && hasid(model, tree)) && continue
         if neighbour.size > tree.size
             @debug "Tree $(tree.id) died because of competition."
             remove_agent!(tree, model)
+            return
         else
             @debug "Tree $(tree.id) died because of competition."
             remove_agent!(neighbour, model)
@@ -125,6 +129,7 @@ function agent_step!(tree::Tree, model::AgentBasedModel)
         if pathogen.lethality > rand(Float64)
             @debug "Tree $(tree.id) died because of disease."
             remove_agent!(tree, model)
+            return
         end
     end
     # growth and aging
@@ -134,6 +139,7 @@ function agent_step!(tree::Tree, model::AgentBasedModel)
     elseif tree.age >= tree.species.max_age
         @debug "Tree $(tree.id) died because of old age."
         remove_agent!(tree, model)
+        return
     end
     tree.age += 1
     #recordindividual(tree) #TODO
