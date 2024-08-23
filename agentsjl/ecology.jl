@@ -9,7 +9,6 @@
 A struct storing the variables for a species-specific pathogen.
 """
 @kwdef struct Pathogen
-    infectious::Bool = false
     infection_rate::Float64 = 0.8
     infection_radius::Int = 0
     lethality::Float64 = 0.05
@@ -68,11 +67,7 @@ Create a new species. If settings["neutral"] is true, use the standard trait val
 vary them to create unique traits.
 """
 function createspecies(id::Int)
-    if settings["pathogens"]
-        p = Pathogen(infection_radius=settings["transmission"])
-    else
-        p = Pathogen()
-    end
+    p = Pathogen(infection_radius=settings["transmission"])
     s = Species(id=id, pathogen=p)
     if settings["neutral"]
         return s
@@ -109,23 +104,27 @@ function agent_step!(tree::Tree, model::AgentBasedModel)
         end
     end
     # competition for space
-    for neighbour in nearby_agents(tree, model, tree.size)
+    for competitor in nearby_agents(tree, model, tree.size)
         # check for overlapping trees and kill the smaller one
-        !(hasid(model, neighbour) && hasid(model, tree)) && continue
-        if neighbour.size > tree.size
+        !(hasid(model, competitor) && hasid(model, tree)) && continue
+        if competitor.size > tree.size
             @debug "Tree $(tree.id) died because of competition."
             remove_agent!(tree, model)
             return
         else
             @debug "Tree $(tree.id) died because of competition."
-            remove_agent!(neighbour, model)
+            remove_agent!(competitor, model)
         end
     end
     # infection dynamics
     if tree.infected
         pathogen = tree.species.pathogen
-        # pathogens have a one-update incubation period
-        pathogen.infectious ? spreadinfection(tree, model) : pathogen.infectious = true
+        for neighbour in nearby_agents(tree, model, pathogen.infection_radius)
+            # infect nearby conspecifics with a certain probability
+            if neighbour.species.id == tree.species.id && pathogen.infection_rate > rand(Float64)
+                neighbour.infected = true
+            end
+        end
         if pathogen.lethality > rand(Float64)
             @debug "Tree $(tree.id) died because of disease."
             remove_agent!(tree, model)
@@ -142,5 +141,4 @@ function agent_step!(tree::Tree, model::AgentBasedModel)
         return
     end
     tree.age += 1
-    #recordindividual(tree) #TODO
 end

@@ -1,4 +1,3 @@
-#!/usr/bin/env julia
 ####
 #### Janzen-Connell Model
 ####
@@ -16,6 +15,7 @@ const jcm_version = v"2.0"
 
 using Agents,
     CairoMakie,
+    GLMakie,
     Logging,
     Random
 
@@ -24,10 +24,10 @@ const settings = Dict("species" => 16,              # The number of species that
                       "runtime" => 1000,            # The number of updates the simulation will run
                       "datafile" => "jcm_data.csv", # The name of the recorded data file
                       "datafreq" => 50,             # How long between data recordings?
-                      "pathogens" => false,         # Include pathogens in the simulation?
+                      "pathogens" => true,          # Include pathogens in the simulation?
                       "transmission" => 40,         # Pathogen infection radius
                       "neutral" => false,           # All species have identical trait values?
-                      "verbosity" => Logging.Info,  # The log level (Debug, Info, Warn, Error)
+                      "verbosity" => Logging.Debug, # The log level (Debug, Info, Warn, Error)
                       "seed" => 0)                  # The seed for the RNG (0 -> random)
 
 include("ecology.jl")
@@ -67,17 +67,35 @@ Set up, run, and visualise the model.
 function runmodel()
     model = initworld()
     @time run!(model, settings["runtime"])
+    CairoMakie.activate!()
     abmvideo(
         "janzen-connell.mp4", model;
-        agent_marker = a -> a.infected ? :circle : :diamond,
-        agent_color = a -> Makie.to_colormap(:tab20)[a.species.id],
+        agent_marker = a -> a.infected ? :diamond : :circle,
+        agent_color = a -> a.species.id,
         framerate = 20, frames = 150,
         title = "Janzen-Connell Model"
     )
 end
-    
+
+"""
+    openapp()
+
+Set up a model and launch an interactive window to run it.
+"""
+function openapp()
+    model = initworld()
+    fig, abmobs = abmexploration(model;
+                                 mlabels = ["Number of trees", "Infected trees", "Species"],
+                                 mdata = [nagents, m->count(a->a.infected, allagents(m)),
+                                          m->length(unique(map(a->a.species.id, allagents(m))))],
+                                 agent_marker = a -> a.infected ? :diamond : :circle,
+                                 #agent_size = a -> a.size, #FIXME gives an error for some reason
+                                 agent_color = a -> a.species.id)
+    return fig
+end
+
 if !isinteractive()
-    runmodel()
+    openapp()
 end
 
 end
