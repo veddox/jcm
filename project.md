@@ -5,10 +5,15 @@
 ## Author
 
 **Daniel Vedder**  
+Department of Biodiversity and People  
+Helmholtz Centre for Environmental Research - UFZ  
+German Centre for Integrative Biodiversity Research (iDiv) Halle-Jena-Leipzig  
+[daniel.vedder@idiv.de](mailto:daniel.vedder@idiv.de)
+
+*formerly:*  
 Ecosystem Modeling Group  
 Center for Computational and Theoretical Biology  
-University of Würzburg  
-[daniel.vedder@stud-mail.uni-wuerzburg.de](mailto:daniel.vedder@stud-mail.uni-wuerzburg.de)
+University of Würzburg
 
 ## Releases
 
@@ -33,6 +38,8 @@ University of Würzburg
 ### Features
 
 - implement proper (or at least, linear) dispersal kernels for seeds
+
+- in the Agents.jl version: implement data gathering and analysis across runs
 
 ## License
 
